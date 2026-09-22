@@ -1,0 +1,46 @@
+---
+# Definition d'un execution environment (format v3, ansible-builder 3.x).
+#
+# Un EE est une image conteneur contenant ansible-core, les collections du
+# projet et leurs dependances systeme et Python. Interet : la CI, le poste de
+# travail et l'ordonnanceur executent STRICTEMENT le meme environnement.
+#
+# Construction :
+#   ansible-builder build -t formation-ee:1.0 -f execution-environment.yml
+# Utilisation :
+#   ansible-navigator run site.yml --eei formation-ee:1.0
+version: 3
+
+images:
+  base_image:
+    # Image de base communautaire : une distribution minimale, sans ansible.
+    name: ghcr.io/ansible/community-ee-base:latest
+
+dependencies:
+  # On part d'ansible-core SEUL, pas du paquet communautaire : les collections
+  # necessaires sont declarees explicitement ci-dessous. C'est tout l'interet
+  # de collections/requirements.yml.
+  ansible_core:
+    package_pip: ansible-core>=2.21,<2.22
+
+  ansible_runner:
+    package_pip: ansible-runner
+
+  # Les collections du projet, reutilisees telles quelles.
+  galaxy: ../../collections/requirements.yml
+
+  # Dependances Python des collections (psycopg2 pour community.postgresql,
+  # kubernetes pour kubernetes.core au module 15).
+  python:
+    - psycopg2-binary
+    - kubernetes>=24.2.0
+    - jsonpatch
+
+  system:
+    - openssh-clients [platform:rpm]
+    - sshpass [platform:rpm]
+
+additional_build_steps:
+  append_final:
+    - RUN ansible --version
+    - RUN ansible-galaxy collection list

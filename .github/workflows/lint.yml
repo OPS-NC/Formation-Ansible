@@ -1,0 +1,26 @@
+---
+# Verification continue des corriges de la formation.
+# Ce workflow est reel : il valide ce depot a chaque poussee.
+name: lint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  ansible-lint:
+    name: ansible-lint (profil production)
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Recuperer le depot
+        uses: actions/checkout@v6
+
+      - name: Analyser les corriges
+        uses: ansible/ansible-lint@v26.8.0
+        with:
+          # Le profil est deja fixe dans .ansible-lint ; on le repete pour
+          # que le job reste explicite et independant du fichier.
+          args: "--profile production corrige/"
+          setup_python: "true"
+          requirements_file: "collections/requirements.yml"

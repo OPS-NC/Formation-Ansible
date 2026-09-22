@@ -1,0 +1,78 @@
+---
+# Chaine d'integration pour un projet Ansible.
+#
+# L'image community-ansible-dev-tools embarque ansible-core, ansible-lint,
+# molecule, ansible-navigator et podman-in-podman : un seul environnement
+# pour toutes les etapes.
+
+stages:
+  - lint
+  - test
+  - check
+  - deploy
+
+default:
+  image: ghcr.io/ansible/community-ansible-dev-tools:latest
+  before_script:
+    - ansible --version
+    - ansible-galaxy collection install -r collections/requirements.yml
+
+variables:
+  # Sans /dev/fuse dans le runner, overlay n'est pas utilisable par podman.
+  STORAGE_DRIVER: vfs
+  BUILDAH_ISOLATION: chroot
+  ANSIBLE_FORCE_COLOR: "1"
+
+# --- 1. Analyse statique : rapide, lancee sur chaque poussee ---------------
+lint:
+  stage: lint
+  script:
+    - ansible-lint --profile production --offline
+  # `--offline` evite que le lint dependance du reseau.
+
+# --- 2. Tests Molecule : plus lents, sur les modifications de roles --------
+molecule:
+  stage: test
+  script:
+    - podman info
+    - cd roles/nginx
+    - molecule test --workers cpus-1
+  rules:
+    - changes:
+        - roles/**/*
+  # Piege : sur un runner Docker, podman rootless exige soit privileged = true
+  # dans config.toml du runner, soit --device /dev/fuse avec SYS_ADMIN.
+  # Le DinD classique est incompatible avec les conteneurs systemd sans
+  # --cgroupns=host.
+
+# --- 3. Simulation sur l'environnement de developpement --------------------
+check:
+  stage: check
+  script:
+    - echo "$VAULT_PASSWORD" > .vault_pass
+    - chmod 600 .vault_pass
+    - ansible-playbook site.yml
+      -i inventories/dev/
+      --vault-password-file .vault_pass
+      --check --diff
+  after_script:
+    - rm -f .vault_pass
+  environment:
+    name: dev
+
+# --- 4. Application en production : manuelle et sur tag uniquement ---------
+deploy:
+  stage: deploy
+  script:
+    - echo "$VAULT_PASSWORD" > .vault_pass
+    - chmod 600 .vault_pass
+    - ansible-playbook site.yml
+      -i inventories/prod/
+      --vault-password-file .vault_pass
+  after_script:
+    - rm -f .vault_pass
+  environment:
+    name: production
+  when: manual
+  rules:
+    - if: $CI_COMMIT_TAG

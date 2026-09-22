@@ -1,0 +1,49 @@
+---
+# Chaine d'integration GitHub Actions pour un projet Ansible.
+name: ansible
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+
+  lint:
+    name: ansible-lint (profil production)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+
+      # Action officielle du projet ansible-lint. Elle installe Python et
+      # les collections declarees, puis lance l'analyse.
+      - uses: ansible/ansible-lint@v26.8.0
+        with:
+          args: "--profile production"
+          setup_python: "true"
+          requirements_file: "collections/requirements.yml"
+
+  molecule:
+    name: Molecule (${{ matrix.role }})
+    runs-on: ubuntu-24.04
+    needs: lint
+    strategy:
+      fail-fast: false
+      matrix:
+        role: [nginx, base]
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+
+      - name: Installer l outillage
+        run: |
+          python -m pip install --upgrade pip
+          pip install molecule ansible-core
+          ansible-galaxy collection install containers.podman
+
+      - name: Executer le scenario
+        working-directory: roles/${{ matrix.role }}
+        run: molecule test
