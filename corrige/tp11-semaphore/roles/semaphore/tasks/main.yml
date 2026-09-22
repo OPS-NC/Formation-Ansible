@@ -21,6 +21,12 @@
     name:
       - git                 # exige par Semaphore pour cloner les depots
       - python3-venv        # pour l'environnement Ansible dedie
+      # ansible.builtin.pip importe `packaging` AVEC L'INTERPRETEUR DE LA
+      # CIBLE pour comparer les versions. Debian 13 ne le fournit pas dans son
+      # python3 systeme, d'ou, sans ce paquet :
+      #   Failed to import the required Python library (packaging) on tools's
+      #   Python /usr/bin/python3.13
+      - python3-packaging
       - openssl
     state: present
 

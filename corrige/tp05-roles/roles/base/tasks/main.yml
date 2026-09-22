@@ -19,6 +19,17 @@
   community.general.timezone:
     name: "{{ parc_timezone }}"
 
+# Meme raison que dans le role nginx : sans rafraichissement, l'installation
+# echoue en 404 des que le cache de la box epinglee a pris de l'age.
+# `ansible.builtin.package` n'expose pas d'option de cache, d'ou la condition
+# sur la famille.
+- name: Rafraichir le cache de paquets (famille Debian)
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+  changed_when: false
+  when: ansible_facts['os_family'] == 'Debian'
+
 - name: Installer les paquets de base
   ansible.builtin.package:
     name: "{{ paquets_base + [paquet_ntp] }}"

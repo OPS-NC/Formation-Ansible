@@ -37,6 +37,17 @@
 
     # --- Paquets et services ---------------------------------------------
 
+    # La box Debian est epinglee a une version : son cache apt vieillit, et
+    # Debian retire du miroir les .deb rendus obsoletes par un point release.
+    # `ansible.builtin.package` n'expose pas d'option de rafraichissement :
+    # c'est une difference de MECANISME entre familles, d'ou la condition.
+    - name: Rafraichir le cache de paquets (famille Debian)
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+      changed_when: false
+      when: ansible_facts['os_family'] == 'Debian'
+
     - name: Installer les paquets de base
       ansible.builtin.package:
         name: "{{ paquets_base + [paquet_ntp] }}"
