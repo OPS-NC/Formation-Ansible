@@ -429,11 +429,18 @@ parc par commandes ad hoc.
 
 ```console
 $ ansible all -m ansible.builtin.debug -a "var=banniere"
-web01 | SUCCESS => { "banniere": "web01 - frontal principal" }
-web02 | SUCCESS => { "banniere": "Serveur web - lab formation" }
-db01  | SUCCESS => { "banniere": "Serveur de base de donnees - lab formation" }
-tools | SUCCESS => { "banniere": "Machine du lab - usage formation" }
+web01 | SUCCESS => 
+    banniere: web01 - frontal principal
+web02 | SUCCESS => 
+    banniere: Serveur web - lab formation
+db01 | SUCCESS => 
+    banniere: Serveur de base de donnees - lab formation
+tools | SUCCESS => 
+    banniere: Machine du lab - usage formation
 ```
+
+L'ordre des machines varie d'une exécution à l'autre : les quatre hôtes sont traités en
+parallèle (`forks = 10`), et chacun s'affiche dès qu'il répond.
 
 ### Pièges courants
 

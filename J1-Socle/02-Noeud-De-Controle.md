@@ -367,12 +367,17 @@ Disposer d'un nœud de contrôle fonctionnel et joindre les quatre VMs du jour 1
 
 ```console
 $ ansible all -m ansible.builtin.ping
-web01 | SUCCESS => {
-    "changed": false,
-    "ping": "pong"
-}
+web01 | SUCCESS => 
+    ansible_facts:
+        discovered_interpreter_python: /usr/bin/python3.13
+    changed: false
+    ping: pong
 ...
 ```
+
+La sortie est en YAML, et non en JSON : c'est l'effet de `callback_result_format = yaml`
+dans l'`ansible.cfg` du dépôt (§4.2). Sans ce réglage, la même commande répondrait
+`web01 | SUCCESS => {"changed": false, "ping": "pong"}`.
 
 ### Pièges courants
 
