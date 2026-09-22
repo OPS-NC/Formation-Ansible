@@ -1,4 +1,12 @@
-{{ ansible_managed | ansible.builtin.comment }}
+{#
+  PAS de `ansible_managed` ici. Cette variable est fournie par le module
+  ansible.builtin.template, pas par le rendu Jinja2 de kubernetes.core.k8s :
+  l'option `template:` de ce dernier rend le gabarit lui-meme, et la variable
+  reste indefinie. Le playbook echoue alors sur
+    AnsibleUndefinedVariable: 'ansible_managed' is undefined
+  On ecrit donc la mention en clair.
+#}
+# Manifeste genere par Ansible - TP 14. Ne pas modifier a la main.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
