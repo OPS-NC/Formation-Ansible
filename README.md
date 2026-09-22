@@ -39,13 +39,15 @@ Aucune installation manuelle, aucune ISO.
 | `k3s-master` | 192.168.56.41 | Debian 13 | 2 Go | 2 | Plan de contrôle Kubernetes — J3 |
 | `k3s-node01` | 192.168.56.42 | Debian 13 | 1,5 Go | 2 | Nœud de calcul — J3 |
 | `k3s-node02` | 192.168.56.43 | Debian 13 | 1,5 Go | 2 | Nœud de calcul — J3 |
+| `net01` | 192.168.56.51 | VyOS | 1 Go | 1 | Routeur, automatisation réseau — J3 |
 
-Réseau host-only `192.168.56.0/24`. Les VMs du cluster k3s ne démarrent pas par défaut : elles
-sont réservées au jour 3.
+Réseau host-only `192.168.56.0/24`. Les machines du jour 3 ne démarrent pas par défaut, afin de
+ménager la mémoire du poste pendant les deux premiers jours.
 
 ```bash
 vagrant up                                          # lab J1 / J2  (4 VMs, ~6 Go)
-vagrant up k3s-master k3s-node01 k3s-node02         # lab J3       (3 VMs, ~5 Go)
+vagrant up k3s-master k3s-node01 k3s-node02         # cluster J3   (3 VMs, ~5 Go)
+vagrant up net01                                    # routeur J3   (1 VM,  ~1 Go)
 vagrant halt                                        # arrêt
 vagrant destroy -f                                  # remise à zéro
 ```
@@ -84,10 +86,10 @@ La procédure d'installation complète du poste est décrite dans le
 | # | Module | Durée | Contenu |
 |---|---|---|---|
 | 13 | [Provisioning : Proxmox et VMware](J3-Perimetres-Avances/13-Provisioning.md) | 105 min | `community.proxmox`, `vmware.vmware`, Terraform — **TP 12** |
-| 14 | [Automatisation réseau](J3-Perimetres-Avances/14-Reseau.md) | 90 min | `network_cli`, resource modules, NetBox — **TP 13** |
+| 14 | [Automatisation réseau](J3-Perimetres-Avances/14-Reseau.md) | 90 min | `network_cli`, resource modules, VyOS, NetBox — **TP 13** |
 | 15 | [Kubernetes avec Ansible](J3-Perimetres-Avances/15-Kubernetes.md) | 105 min | Cluster k3s, `kubernetes.core`, Helm — **TP 14** |
-| 16 | [Event-Driven, IA, Windows](J3-Perimetres-Avances/16-EDA-IA-Windows.md) | 45 min | `ansible-rulebook`, assistants IA, `ansible.windows` | — |
-| 17 | [Synthèse et feuille de route](J3-Perimetres-Avances/17-Synthese.md) | 45 min | Checklist production, certification, ressources | — |
+| 16 | [Event-Driven, IA, Windows](J3-Perimetres-Avances/16-EDA-IA-Windows.md) | 45 min | `ansible-rulebook`, assistants IA, `ansible.windows` |
+| 17 | [Synthèse et feuille de route](J3-Perimetres-Avances/17-Synthese.md) | 45 min | Checklist production, certification, quiz final |
 
 ---
 
