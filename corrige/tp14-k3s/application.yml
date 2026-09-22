@@ -10,6 +10,16 @@
   connection: local
 
   vars:
+    # Les modules kubernetes.core importent la bibliotheque Python
+    # `kubernetes` AVEC L'INTERPRETEUR DE LA CIBLE. Ici la cible est
+    # localhost, et `interpreter_python = auto_silent` (ansible.cfg) y fait
+    # decouvrir le python du SYSTEME - pas celui de l'environnement virtuel
+    # pipx dans lequel `pipx inject` a place la bibliotheque :
+    #   Failed to import the required Python library (kubernetes) on
+    #   <poste>'s Python /usr/bin/python3.14
+    # `ansible_playbook_python` designe l'interpreteur qui execute
+    # ansible-playbook, c'est-a-dire precisement celui du venv.
+    ansible_python_interpreter: "{{ ansible_playbook_python }}"
     kubeconfig: "{{ playbook_dir }}/kubeconfig"
     app_namespace: formation
     app_nom: vitrine
@@ -75,6 +85,11 @@
     # `template:` rend le gabarit Jinja2 SUR LE CONTROLEUR avant de l'envoyer
     # a l'API. Les manifestes deviennent parametrables comme n'importe quel
     # fichier de configuration.
+    #
+    # ATTENTION : ce rendu n'est PAS celui d'ansible.builtin.template. Les
+    # variables que ce dernier injecte - `ansible_managed` en tete - n'y sont
+    # pas definies, et le playbook echouerait sur
+    #   AnsibleUndefinedVariable: 'ansible_managed' is undefined
     # Le gabarit contient TROIS ressources : Deployment, Service et Ingress.
     # Une condition d'attente commune serait fausse : `Available` n'existe que
     # sur un Deployment. Appliquee a un Service, l'attente expire.

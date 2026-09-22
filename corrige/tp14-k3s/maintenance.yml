@@ -7,6 +7,16 @@
   connection: local
 
   vars:
+    # Les modules kubernetes.core importent la bibliotheque Python
+    # `kubernetes` AVEC L'INTERPRETEUR DE LA CIBLE. Ici la cible est
+    # localhost, et `interpreter_python = auto_silent` (ansible.cfg) y fait
+    # decouvrir le python du SYSTEME - pas celui de l'environnement virtuel
+    # pipx dans lequel `pipx inject` a place la bibliotheque :
+    #   Failed to import the required Python library (kubernetes) on
+    #   <poste>'s Python /usr/bin/python3.14
+    # `ansible_playbook_python` designe l'interpreteur qui execute
+    # ansible-playbook, c'est-a-dire precisement celui du venv.
+    ansible_python_interpreter: "{{ ansible_playbook_python }}"
     kubeconfig: "{{ playbook_dir }}/kubeconfig"
     noeud_cible: k3s-node01
 
