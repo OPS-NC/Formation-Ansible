@@ -112,6 +112,15 @@
         - name: Attendre que le service web reponde
           ansible.builtin.uri:
             url: "http://127.0.0.1:{{ http_port }}/"
+            # `uri` SUIT les redirections par defaut. Sur le parc configure au
+            # TP 04, le vhost par defaut du port 80 est `ancien` (les fichiers
+            # de sites-enabled sont inclus par ordre alphabetique), et il
+            # renvoie 301 vers HTTPS. Suivre cette redirection mene au port 443,
+            # ou rien n'ecoute :
+            #   Status code was -1 and not [200, 301]: Request failed:
+            #   <urlopen error [Errno 111] Connection refused>
+            # Le controle de sante doit constater la REPONSE, pas la suivre.
+            follow_redirects: none
             status_code: [200, 301]
           register: maj_sante
           until: maj_sante.status in [200, 301]
