@@ -1,0 +1,9 @@
+---
+# Partie NON sensible, en clair et lisible en revue de code.
+postgresql_base: formation
+postgresql_compte: applicatif
+postgresql_port: 5432
+
+# Indirection : la variable utilisee par les roles pointe vers la variable
+# chiffree. Le fichier en clair documente l'existence du secret.
+postgresql_motdepasse: "{{ vault_postgresql_motdepasse }}"
