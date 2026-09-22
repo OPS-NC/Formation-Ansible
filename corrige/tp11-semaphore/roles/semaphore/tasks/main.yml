@@ -9,8 +9,20 @@
   ansible.builtin.package:
     name:
       - git                 # exige par Semaphore pour cloner les depots
-      - ansible-core        # Semaphore appelle ansible-playbook en local
+      - python3-venv        # pour l'environnement Ansible dedie
       - openssl
+    state: present
+
+# On n'installe PAS `ansible-core` depuis apt : Debian 13 livre la 2.19, en
+# fin de vie en novembre 2026, alors que la formation cible la 2.21. Semaphore
+# cherchant `ansible-playbook` dans le PATH, un venv dedie suffit a lui faire
+# executer le meme moteur que le poste de travail.
+- name: Creer l environnement Ansible de Semaphore
+  ansible.builtin.pip:
+    name:
+      - "ansible-core=={{ semaphore_ansible_version }}"
+    virtualenv: "{{ semaphore_venv }}"
+    virtualenv_command: /usr/bin/python3 -m venv
     state: present
 
 - name: Creer le compte de service

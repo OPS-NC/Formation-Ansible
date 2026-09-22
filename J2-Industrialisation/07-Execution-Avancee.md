@@ -303,7 +303,9 @@ cat rapport-patching.json
 
 ### Points d'attention
 
-- **Le mécanisme de détection est une exception assumée** à la règle du module 04. Quand deux
+- **Deux exceptions assumées** à la règle du module 04, pour la même raison. La mise à jour
+  complète d'un système n'est pas portable : `dnf` accepte `name: '*'` avec `state: latest`,
+  là où `apt` attend `upgrade: dist`. La détection du redémarrage diffère de même. Quand deux
   familles diffèrent par une **valeur**, les variables de groupe suffisent. Quand elles diffèrent
   par le **mécanisme** — ici un fichier contre un code retour — il faut normaliser explicitement.
   La règle reste : ne pas laisser la différence se propager dans la suite du playbook.

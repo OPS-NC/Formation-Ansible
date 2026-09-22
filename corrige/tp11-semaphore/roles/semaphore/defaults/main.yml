@@ -21,5 +21,13 @@ semaphore_admin_nom: "Administrateur formation"
 semaphore_admin_email: admin@lab.local
 semaphore_admin_motdepasse: "changeme-formation"
 
+# Debian 13 ne fournit qu'ansible-core 2.19, en fin de vie en novembre 2026,
+# alors que la formation cible 2.21. Semaphore appelant `ansible-playbook`
+# depuis le PATH, on lui fournit un environnement virtuel dedie plutot que le
+# paquet de la distribution : le moteur execute est alors le meme que celui du
+# poste de travail.
+semaphore_ansible_version: "2.21.*"
+semaphore_venv: /opt/semaphore-venv
+
 semaphore_timezone: "{{ parc_timezone | default('UTC') }}"
 semaphore_max_taches_paralleles: 5

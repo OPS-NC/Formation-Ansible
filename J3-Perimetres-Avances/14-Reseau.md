@@ -91,18 +91,20 @@ Deux usages structurants :
 - **`overridden` mérite une revue.** Il supprime tout ce qui n'est pas décrit. C'est l'état qui
   garantit la conformité, et celui qui coupe un réseau si le modèle est incomplet.
 
-> **Attention — `rendered` et `parsed` ne fonctionnent pas hors ligne**
-> Leur documentation les présente comme des états « hors ligne ». En pratique, avec
-> `ansible-core` 2.21 et les collections actuelles, ils **exigent malgré tout une cible
-> joignable** :
+> **Attention — `rendered` et `parsed` réclament quand même une cible joignable**
+> Leur documentation les présente, à juste titre, comme des traitements hors ligne : **le module
+> lui-même n'ouvre aucune connexion** pour ces deux états. Le blocage vient de son **greffon
+> d'action** et du greffon de connexion, pas du module.
+>
+> Constat reproduit ici avec `cisco.ios` 11.5 et `vyos.vyos` 6.0 sur `ansible-core` 2.21.
+> Ne généralisez pas à toutes les collections ni à toutes les versions sans vérifier :
 > - avec `connection: local`, le module refuse : `Connection type local is not valid for this
 >   module` — un garde-fou présent dans le greffon d'action depuis `cisco.ios` 4.0.0 ;
 > - avec `network_cli`, ansible-core établit la connexion SSH **avant** d'exécuter le module,
 >   car ce greffon déclare `force_persistence`.
 >
-> Le module lui-même n'ouvre pas de connexion pour ces deux états, mais le greffon l'a déjà
-> fait. Aucun contournement documenté n'existe. Pour travailler réellement sans équipement,
-> voyez la section 4.
+> Aucun contournement documenté n'a été trouvé pour cette combinaison. Pour travailler sans
+> équipement, voyez la section 4.
 
 ## 3. Le paysage des collections
 
@@ -320,9 +322,9 @@ ok: [localhost] =>
   greffons du constructeur.
 - Les **resource modules** décrivent des données, pas des commandes.
 - `gathered` ouvre la migration ; `merged` est sûr ; `overridden` doit être relu.
-- **`rendered` et `parsed` ne fonctionnent pas sans cible joignable**, contrairement à ce que
-  leur nom suggère.
-- **`cli_parse` avec `text:`** est la vraie voie hors ligne.
+- `rendered` et `parsed` **butent sur le greffon d'action**, pas sur le module : vérifiez le
+  comportement de votre collection plutôt que de généraliser.
+- **`cli_parse` avec `text:`** est la voie hors ligne retenue ici.
 - `junipernetworks.junos` est archivée : utilisez `juniper.device`.
 - **Sauvegarder avant de modifier**, toujours.
 

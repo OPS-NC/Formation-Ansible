@@ -55,12 +55,18 @@ exec $SHELL -l           # recharge le shell : indispensable
 # 2. Le paquet communautaire Ansible (moteur + ~90 collections)
 #    --include-deps est OBLIGATOIRE : sans lui, seuls les exécutables du paquet
 #    `ansible` sont exposés, et `ansible-playbook` (fourni par ansible-core) manque.
-pipx install --include-deps ansible
+#    La version est FIGÉE : sans elle, deux stagiaires n'ont pas le même moteur.
+pipx install --include-deps 'ansible==14.4.*'
 
 # 3. Outils de qualité, installés séparément (modules 09 et 10)
-pipx install ansible-lint
-pipx install molecule
+pipx install 'ansible-lint==26.8.*'
+pipx install 'molecule==26.8.*'
 ```
+
+> **Attention**
+> Ne retirez pas ces contraintes de version. `pipx install ansible` sans version installe la
+> dernière publiée, qui n'est pas forcément celle validée pour ce support. La même exigence
+> s'applique aux collections, bornées à leur majeure dans `collections/requirements.yml`.
 
 Chaque outil vit dans son propre environnement virtuel et n'expose que ses propres
 exécutables : il n'y a donc pas de collision dans `~/.local/bin`.

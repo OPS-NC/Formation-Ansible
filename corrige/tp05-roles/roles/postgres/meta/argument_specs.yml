@@ -12,7 +12,9 @@ argument_specs:
       postgres_port:
         type: int
         default: 5432
-        description: Port d ecoute du serveur.
+        description:
+          - Port ouvert dans firewalld.
+          - Ne configure PAS le port d ecoute de PostgreSQL, laisse en local.
       postgres_bases:
         type: list
         elements: dict

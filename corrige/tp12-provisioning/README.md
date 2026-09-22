@@ -30,8 +30,17 @@ export PROXMOX_HOST=pve.lab.local
 export PROXMOX_USER=ansible@pve
 export PROXMOX_TOKEN_ID=automation
 export PROXMOX_TOKEN_SECRET=...
-ansible-playbook corrige/tp12-provisioning/proxmox/creer-vm.yml
+
+# L'inventaire dynamique doit etre passe en -i : `meta: refresh_inventory`
+# recharge les sources DEJA selectionnees, il n'en decouvre aucune.
+ansible-playbook \
+  -i corrige/tp12-provisioning/proxmox/inventory.proxmox.yml \
+  corrige/tp12-provisioning/proxmox/creer-vm.yml
 ```
+
+> Le second play cible le groupe `tag_dev`, construit par l'inventaire à partir
+> des tags Proxmox posés lors de la création. Sans le `-i`, ce groupe n'existe
+> pas et le play ne s'applique à aucune machine.
 
 L'assertion en début de playbook échoue explicitement si le secret est absent, plutôt que de
 laisser l'API renvoyer une erreur d'authentification obscure.

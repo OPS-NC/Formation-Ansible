@@ -9,6 +9,9 @@ Type=simple
 User={{ semaphore_utilisateur }}
 Group={{ semaphore_utilisateur }}
 WorkingDirectory={{ semaphore_repertoire_donnees }}
+# Semaphore resout `ansible-playbook` depuis le PATH : le venv dedie doit y
+# figurer AVANT les chemins systeme.
+Environment=PATH={{ semaphore_venv }}/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 ExecStart=/usr/bin/semaphore server --config {{ semaphore_repertoire_config }}/config.json
 ExecReload=/bin/kill -s HUP $MAINPID
 Restart=always

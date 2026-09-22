@@ -13,6 +13,12 @@ postgres_paquets:
 
 postgres_datadir: /var/lib/pgsql/data
 postgres_service: postgresql
+
+# PORTEE DU ROLE : il installe un serveur en ecoute LOCALE et y cree bases et
+# comptes. Il ne modifie ni `listen_addresses`, ni `port`, ni `pg_hba.conf` :
+# rendre une base accessible depuis le reseau releve d'un durcissement qui
+# depasse ce TP. `postgres_port` ne sert donc qu'a la regle de pare-feu, et
+# changer sa valeur ne deplace PAS le serveur.
 postgres_port: 5432
 
 # Bases et comptes a creer. Vides par defaut.

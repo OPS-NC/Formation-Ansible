@@ -62,8 +62,10 @@ Le modèle de données produit par `cli_parse` :
 
 ## La limite des états dits « hors ligne »
 
-`rendered` et `parsed` sont présentés comme ne nécessitant pas d'équipement. Ce n'est pas le cas
-en pratique :
+`rendered` et `parsed` sont documentés comme des traitements hors ligne, et le **module** l'est
+effectivement. Le blocage vient de son **greffon d'action** et du greffon de connexion. Constat
+reproduit avec `cisco.ios` 11.5 et `vyos.vyos` 6.0 sur `ansible-core` 2.21 ; à revérifier pour
+une autre combinaison :
 
 | Tentative | Résultat |
 |---|---|

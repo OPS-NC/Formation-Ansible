@@ -50,6 +50,9 @@
         path: "{{ nginx_chemins[ansible_facts['os_family']].site_defaut }}"
       register: nginx_defaut
 
+    # Sur Debian ce controle est significatif. Sur RHEL-like, le serveur par
+    # defaut vit probablement dans nginx.conf : l'assertion passe alors sans
+    # rien prouver. Reserve assumee, a lever sur l'image Rocky.
     - name: Absence du site par defaut
       ansible.builtin.assert:
         that:

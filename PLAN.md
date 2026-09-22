@@ -13,7 +13,7 @@
 
 À l'issue de la formation, le stagiaire est capable de :
 
-1. Installer et configurer un nœud de contrôle Ansible moderne (pipx/uv, ansible-dev-tools, execution environments) et administrer un parc hétérogène Debian / RHEL-like.
+1. Installer et configurer un nœud de contrôle Ansible moderne (pipx, versions figées, execution environments) et administrer un parc hétérogène Debian / RHEL-like.
 2. Écrire des playbooks, rôles et collections **idempotents**, testés (ansible-lint, molecule) et conformes aux bonnes pratiques Red Hat CoP.
 3. Structurer un projet Ansible dans Git et l'intégrer à une chaîne CI/CD (GitLab CI, GitHub Actions, pre-commit).
 4. Réutiliser du contenu existant (Galaxy, collections certifiées / communautaires, hub privé) et publier le sien.
@@ -67,8 +67,8 @@ Les trois VMs du cluster k3s sont déclarées `autostart: false` : `vagrant up` 
 Réseau host-only `192.168.56.0/24`. La résolution de noms est assurée par un `/etc/hosts` généré par Ansible (TP 03). Le lab réseau du module 14 n'utilise pas de VM : il repose sur les modes hors ligne `parsed` / `rendered` et sur une démonstration formateur.
 ### 3.2 Choix techniques et points d'attention (vérifiés septembre 2026)
 
-- **Ansible :** cible **ansible-core 2.21.x / Ansible 14.x**, installé via `pipx install ansible-dev-tools` (ou `uv tool install`). Les dépôts Ubuntu 26.04 (core 2.20.1), Debian 13 (core 2.19.4, EOL 30 nov. 2026) et Rocky 10 (core 2.16.16, EOL upstream mais maintenu par RHEL 10) sont volontairement écartés pour le nœud de contrôle. Python contrôleur : 3.12–3.14 (Ubuntu 26.04 fournit 3.14). Python cibles : 3.9–3.14 (Debian 13 : 3.13 ; Rocky 10 : 3.12).
-- **Outillage :** ansible-dev-tools 26.8 (ansible-lint, molecule, ansible-navigator, ansible-creator, ansible-builder 3.1, ansible-runner 2.4, ansible-sign, pytest-ansible), extension VS Code `redhat.ansible` 26.8, image conteneur `ghcr.io/ansible/community-ansible-dev-tools`.
+- **Ansible :** cible **ansible-core 2.21.4 / Ansible 14.4**, installé via trois commandes `pipx` à versions figées (`ansible==14.4.*`, `ansible-lint==26.8.*`, `molecule==26.8.*`). `ansible-builder` et `ansible-navigator` s'ajoutent au module 10, `ansible-dev-tools` restant une alternative tout-en-un non retenue. Les dépôts Ubuntu 26.04 (core 2.20.1), Debian 13 (core 2.19.4, EOL 30 nov. 2026) et Rocky 10 (core 2.16.16, EOL upstream mais maintenu par RHEL 10) sont volontairement écartés pour le nœud de contrôle. Python contrôleur : 3.12–3.14 (Ubuntu 26.04 fournit 3.14). Python cibles : 3.9–3.14 (Debian 13 : 3.13 ; Rocky 10 : 3.12).
+- **Outillage :** ansible-lint 26.8, molecule 26.8, ansible-builder 3.1 et ansible-navigator 26.8 (modules 09 et 10), extension VS Code `redhat.ansible` 26.8, image conteneur `ghcr.io/ansible/community-ansible-dev-tools` pour la CI.
 - **Vagrant 2.4.9** (licence BSL, dépôt apt HashiCorp car Ubuntu ne le package plus depuis 24.04) + **VirtualBox 7.2.x**. Vérifier avant la session la compatibilité des modules noyau VirtualBox avec le noyau 7.x d'Ubuntu 26.04 (problèmes signalés avril–mai 2026) ; plan B : provider `vagrant-libvirt` (KVM).
 - **Boxes :** `bento/debian-13` et `bento/rockylinux-10` (providers VirtualBox disponibles). `debian/trixie64` officielle n'existe qu'en libvirt ; `generic/rocky10` n'existe pas ; `rockylinux/10` officielle est figée en 10.0.
 - **Dépréciation HCP Vagrant Registry :** plus de nouvelles boxes après le 1er oct. 2026, fin de support 2 nov. 2026, décommission 31 déc. 2026. **Les boxes doivent être pré-téléchargées** et servies depuis un dépôt local (`vagrant box add` depuis fichier `.box` + metadata JSON) fourni sur clé USB / partage réseau.

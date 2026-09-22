@@ -118,7 +118,10 @@
 
     - name: Attendre l ouverture du service SSH
       ansible.builtin.wait_for:
-        host: "{{ item.ip | ansible.utils.ipaddr('address') }}"
+        # `ansible.utils.ipaddr` exigerait la bibliotheque Python `netaddr`,
+        # que `pipx install ansible` n'installe PAS. Un simple decoupage du
+        # CIDR evite cette dependance non declaree.
+        host: "{{ item.ip.split('/')[0] }}"
         port: 22
         timeout: 300
         delay: 10
@@ -130,3 +133,24 @@
     # enchaine sur la configuration, sans jamais ecrire d'inventaire statique.
     - name: Recharger l inventaire dynamique
       ansible.builtin.meta: refresh_inventory
+
+
+# Second play : les machines existent, on les configure. C'est la raison
+# d'etre du `refresh_inventory` ci-dessus. Il suppose que l'inventaire
+# dynamique a ete passe en -i sur la ligne de commande.
+- name: Configurer les machines fraichement creees
+  hosts: tag_dev
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Verifier que l inventaire dynamique a bien ete charge
+      ansible.builtin.debug:
+        msg: >-
+          {{ ansible_play_hosts | length }} machine(s) decouverte(s) par
+          l inventaire dynamique Proxmox.
+      run_once: true
+
+    # A partir d'ici, on applique les roles du fil rouge, exactement comme
+    # sur les machines du lab : rien ne distingue une VM provisionnee d'une
+    # VM declaree a la main.

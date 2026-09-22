@@ -1,7 +1,13 @@
 ---
+# Le mot de passe administrateur n'est pas dans ce fichier : il vient de
+# group_vars/ops/main.yml, qui pointe vers `vault_semaphore_admin` chiffre
+# au TP 10. Execution :
+#   ansible-playbook -i corrige/tp02-inventaire/inventories/dev/hosts.yml \
+#                    -i corrige/tp10-secrets/inventories/dev/ \
+#                    --vault-id dev@/tmp/vp_dev \
+#                    corrige/tp11-semaphore/semaphore.yml
 - name: Deploiement de l interface web Semaphore
   hosts: ops
   become: true
   roles:
     - role: semaphore
-      semaphore_admin_motdepasse: "{{ vault_semaphore_admin | default('changeme-formation') }}"

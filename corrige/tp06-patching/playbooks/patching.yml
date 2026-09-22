@@ -39,11 +39,26 @@
             mode: "0644"
           when: "'web' in group_names"
 
-        - name: Mettre a jour tous les paquets
-          ansible.builtin.package:
+        # `package` ne sait PAS mettre a jour tout un systeme de facon
+        # portable : `dnf` documente `name: '*'` avec `state: latest`, mais
+        # `apt` attend `upgrade: dist`. C'est une difference de MECANISME,
+        # comme la detection du redemarrage : elle se traite par deux taches
+        # conditionnees, pas par une variable.
+        - name: Mettre a jour tous les paquets (famille Debian)
+          ansible.builtin.apt:
+            upgrade: dist
+            update_cache: true
+            cache_valid_time: 3600
+          register: maj_paquets_debian
+          when: ansible_facts['os_family'] == 'Debian'
+
+        - name: Mettre a jour tous les paquets (famille RedHat)
+          ansible.builtin.dnf:
             name: "*"
             state: latest      # noqa package-latest
-          register: maj_paquets
+            update_cache: true
+          register: maj_paquets_redhat
+          when: ansible_facts['os_family'] == 'RedHat'
 
         # Le mecanisme de detection differe structurellement d'une famille a
         # l'autre : fichier temoin sur Debian, code retour d'une commande sur

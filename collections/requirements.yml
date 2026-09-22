@@ -5,41 +5,55 @@
 # ici reste indispensable :
 #   1. La CI et les execution environments partent d'ansible-core SEUL. Sans
 #      ce fichier, le projet n'y fonctionne pas (modules 09 et 10).
-#   2. Les versions sont epinglees, donc reproductibles d'un poste a l'autre.
-#   3. La liste des dependances reelles du projet devient lisible.
+#   2. La liste des dependances reelles du projet devient lisible.
+#
+# VERSIONS : chaque contrainte est bornee a la MAJEURE effectivement validee
+# pour cette formation. Une borne haute n'est pas un detail : community.
+# postgresql 5.0.0 a par exemple supprime les alias `db`, `port` et `login`.
+# Un simple `>=` aurait laisse passer cette rupture.
 #
 # Installation :
 #   ansible-galaxy collection install -r collections/requirements.yml
 collections:
   - name: ansible.posix
-    version: ">=2.1.0"
+    version: ">=2.1.0,<3.0.0"
+
   - name: community.general
-    version: ">=13.0.0"
+    version: ">=13.0.0,<14.0.0"
+
+  # 5.0.0 a supprime les alias historiques. Les corriges utilisent les noms
+  # canoniques (login_db, login_port, privs, objs, roles).
   - name: community.postgresql
-    version: ">=4.0.0"
+    version: ">=5.0.0,<6.0.0"
 
   # Utilisee par les scenarios Molecule pour piloter les conteneurs de test.
   - name: containers.podman
-    version: ">=1.16.0"
+    version: ">=1.16.0,<2.0.0"
 
   # --- Jour 3 : provisioning, reseau, Kubernetes -------------------------
   - name: community.proxmox
-    version: ">=2.0.0"
+    version: ">=2.0.0,<3.0.0"
 
   - name: vmware.vmware
-    version: ">=2.10.0"
+    version: ">=2.10.0,<3.0.0"
 
   - name: vyos.vyos
-    version: ">=6.0.0"
+    version: ">=6.0.0,<7.0.0"
 
   - name: ansible.netcommon
-    version: ">=8.0.0"
+    version: ">=8.0.0,<9.0.0"
 
   - name: ansible.utils
-    version: ">=6.0.0"
+    version: ">=6.0.0,<7.0.0"
 
   - name: netbox.netbox
-    version: ">=3.23.0"
+    version: ">=3.23.0,<4.0.0"
 
+  # 6.0 a supprime le greffon d'inventaire k8s ; Helm 4 est supporte depuis 6.4.
   - name: kubernetes.core
-    version: ">=6.5.0"
+    version: ">=6.5.0,<7.0.0"
+
+# Les roles autonomes restent installables. La cle doit etre une LISTE :
+# `roles:` suivi uniquement de commentaires produit `None` et fait echouer
+# la validation de schema d'ansible-lint.
+roles: []

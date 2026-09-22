@@ -1,0 +1,7 @@
+---
+# Partie non sensible de la configuration Semaphore.
+semaphore_admin_login: admin
+semaphore_admin_email: admin@lab.local
+
+# Indirection vers la variable chiffree du fichier voisin.
+semaphore_admin_motdepasse: "{{ vault_semaphore_admin }}"

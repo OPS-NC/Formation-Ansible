@@ -5,15 +5,24 @@
 ## Contenu
 
 ```
+site.yml                       playbook du fil rouge, consommant les secrets chiffrés
 inventories/
-├── dev/group_vars/db/
-│   ├── main.yml        en clair : noms, ports, et l'indirection vers le secret
-│   └── vault.yml       chiffré, vault-id `dev`
+├── dev/group_vars/
+│   ├── db/
+│   │   ├── main.yml           en clair : noms, ports, indirection vers le secret
+│   │   └── vault.yml          chiffré, vault-id `dev`
+│   └── ops/
+│       ├── main.yml           configuration Semaphore en clair
+│       └── vault.yml          mot de passe administrateur Semaphore, chiffré
 └── prod/group_vars/db/
     ├── main.yml
-    └── vault.yml       chiffré, vault-id `prod` (mot de passe différent)
+    └── vault.yml              chiffré, vault-id `prod` (mot de passe différent)
 playbooks/demo-secrets.yml
 ```
+
+> **Un secret vit dans le groupe qui le consomme.** Le mot de passe Semaphore est dans
+> `group_vars/ops/`, et non `group_vars/db/` : une variable de groupe n'est visible que par les
+> machines de ce groupe. Placé au mauvais endroit, il resterait indéfini au TP 11.
 
 ## Mots de passe de démonstration
 
