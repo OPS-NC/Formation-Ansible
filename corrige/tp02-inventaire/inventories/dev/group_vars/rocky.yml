@@ -6,3 +6,4 @@ paquets_base:
   - python3-libdnf5
 service_ntp: chronyd
 utilisateur_web: nginx
+paquet_ntp: chrony

@@ -7,3 +7,4 @@ paquets_base:
 service_ntp: systemd-timesyncd
 utilisateur_web: www-data
 origine_variable: "defini dans group_vars/debian.yml"
+paquet_ntp: systemd-timesyncd

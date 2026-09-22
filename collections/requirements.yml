@@ -1,0 +1,17 @@
+---
+# Dependances en collections du projet.
+#
+# Le paquet communautaire `ansible` en embarque une centaine, mais les declarer
+# ici reste indispensable :
+#   1. La CI et les execution environments partent d'ansible-core SEUL. Sans
+#      ce fichier, le projet n'y fonctionne pas (modules 09 et 10).
+#   2. Les versions sont epinglees, donc reproductibles d'un poste a l'autre.
+#   3. La liste des dependances reelles du projet devient lisible.
+#
+# Installation :
+#   ansible-galaxy collection install -r collections/requirements.yml
+collections:
+  - name: ansible.posix
+    version: ">=2.1.0"
+  - name: community.general
+    version: ">=13.0.0"

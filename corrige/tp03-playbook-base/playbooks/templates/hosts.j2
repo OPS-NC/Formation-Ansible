@@ -1,0 +1,13 @@
+{{ ansible_managed | ansible.builtin.comment }}
+127.0.0.1   localhost
+127.0.1.1   {{ inventory_hostname }}.{{ parc_domaine }} {{ inventory_hostname }}
+
+# Parc de formation - environnement {{ parc_environnement }}
+{% for hote in groups['all'] | sort %}
+{{ "%-16s" | format(hostvars[hote]['ansible_host']) }}{{ hote }}.{{ parc_domaine }} {{ hote }}
+{% endfor %}
+
+# IPv6
+::1     localhost ip6-localhost ip6-loopback
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters

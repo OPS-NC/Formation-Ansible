@@ -222,9 +222,8 @@ Le fichier [`ansible.cfg`](../ansible.cfg) à la racine du dépôt :
 
 ```ini
 [defaults]
-inventory        = inventories/dev/hosts.yml
-roles_path       = roles
-collections_path = collections
+inventory  = inventories/dev/hosts.yml
+roles_path = roles
 
 callback_result_format    = yaml
 show_task_path_on_failure = true
@@ -250,8 +249,10 @@ Quelques choix méritent une explication.
   `stdout_callback = yaml`. Cela **ne fonctionne plus** : ce callback appartenait à
   `community.general` et a été supprimé en version 12.0.0. La mise en forme YAML est désormais
   une option du callback `default` livré avec `ansible-core`.
-- **`collections_path = collections`.** Rend le projet autonome. Cela **n'occulte pas** les
-  collections livrées avec le paquet `ansible` : elles sont localisées par un autre mécanisme.
+- **`collections_path` n'est pas défini.** Les collections sont installées dans le chemin par
+  défaut à partir de `collections/requirements.yml`. Le confinement au projet
+  (`collections_path = collections`) est introduit au module 10, avec la chaîne CI, là où il
+  devient nécessaire.
 - **`host_key_checking = True` avec `StrictHostKeyChecking=accept-new`.** Les tutoriels
   désactivent souvent la vérification des clés d'hôte. C'est une mauvaise habitude : elle
   supprime toute détection d'usurpation. `accept-new` accepte un hôte inconnu à la première

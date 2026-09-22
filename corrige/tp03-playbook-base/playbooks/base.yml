@@ -1,0 +1,103 @@
+---
+# TP 03 - Configuration de base du parc, identique sur Debian 13 et Rocky 10.
+#
+# Les differences entre familles ne sont PAS traitees par des `when` :
+# elles sont portees par les variables de groupe (group_vars/debian.yml
+# et group_vars/rocky.yml). La logique reste unique.
+
+- name: Configuration de base du parc
+  hosts: all
+  become: true
+
+  vars:
+    # Compte de service dedie a l automatisation.
+    admin_user: ansible
+    admin_pubkey_path: "{{ lookup('ansible.builtin.env', 'HOME') }}/.ssh/id_ed25519.pub"
+
+  tasks:
+
+    # --- Identite de la machine ------------------------------------------
+
+    - name: Definir le nom d hote
+      ansible.builtin.hostname:
+        name: "{{ inventory_hostname }}"
+
+    - name: Generer /etc/hosts pour l ensemble du parc
+      ansible.builtin.template:
+        src: hosts.j2
+        dest: /etc/hosts
+        owner: root
+        group: root
+        mode: "0644"
+        backup: true
+
+    - name: Definir le fuseau horaire
+      community.general.timezone:
+        name: "{{ parc_timezone }}"
+
+    # --- Paquets et services ---------------------------------------------
+
+    - name: Installer les paquets de base
+      ansible.builtin.package:
+        name: "{{ paquets_base + [paquet_ntp] }}"
+        state: present
+
+    - name: Activer et demarrer la synchronisation horaire
+      ansible.builtin.systemd_service:
+        name: "{{ service_ntp }}"
+        state: started
+        enabled: true
+
+    # --- Compte de service -----------------------------------------------
+
+    - name: Lire la cle publique du poste de travail
+      ansible.builtin.set_fact:
+        admin_pubkey: >-
+          {{ lookup('ansible.builtin.file', admin_pubkey_path, errors='ignore')
+             | default('', true) }}
+      # Le lookup s execute sur le NOEUD DE CONTROLE, pas sur la cible.
+      # `errors='ignore'` evite l echec si la cle n a pas encore ete generee.
+
+    - name: Creer le compte de service
+      ansible.builtin.user:
+        name: "{{ admin_user }}"
+        comment: Compte de service Ansible
+        shell: /bin/bash
+        create_home: true
+        state: present
+
+    - name: Deposer la cle publique autorisee
+      ansible.posix.authorized_key:
+        user: "{{ admin_user }}"
+        key: "{{ admin_pubkey }}"
+        state: present
+        exclusive: true
+      when: admin_pubkey | length > 0
+
+    - name: Autoriser sudo sans mot de passe pour le compte de service
+      ansible.builtin.copy:
+        content: "{{ admin_user }} ALL=(ALL) NOPASSWD:ALL\n"
+        dest: "/etc/sudoers.d/90-{{ admin_user }}"
+        owner: root
+        group: root
+        mode: "0440"
+        # `validate` fait verifier le fichier par visudo AVANT de le mettre en
+        # place. Sans cela, une erreur de syntaxe rend sudo inutilisable.
+        validate: /usr/sbin/visudo -cf %s
+
+    # --- Controle final ---------------------------------------------------
+
+    - name: Relever la version du noyau
+      ansible.builtin.command: uname -r
+      register: noyau
+      changed_when: false
+      # Une commande de LECTURE ne modifie rien : `changed_when: false` evite
+      # qu elle soit rapportee `changed` a chaque execution.
+
+    - name: Afficher le resume de la machine
+      ansible.builtin.debug:
+        msg: >-
+          {{ inventory_hostname }}
+          ({{ ansible_facts['distribution'] }} {{ ansible_facts['distribution_version'] }})
+          noyau {{ noyau.stdout }}
+          python {{ ansible_facts['python_version'] }}
