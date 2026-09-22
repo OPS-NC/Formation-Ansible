@@ -105,7 +105,17 @@ servers = [
     :ip        => "192.168.56.51",
     # Seconde carte : le TP configure deux interfaces (eth1 et eth2).
     # Sans elle, eth2 n'existe pas et la configuration est rejetee.
-    :ip2       => "10.10.20.1",
+    #
+    # L'adresse DOIT rester dans 192.168.56.0/21, seule plage host-only
+    # autorisee par defaut depuis VirtualBox 6.1.28. Une adresse hors plage
+    # (10.10.20.1, par exemple) fait echouer `vagrant up net01` :
+    #   The IP address configured for the host-only network is not within the
+    #   allowed ranges.
+    #     Address: 10.10.20.1
+    #     Ranges: 192.168.56.0/21, fe80::/10
+    # La contourner imposerait de creer /etc/vbox/networks.conf, que le
+    # module 02 annonce explicitement comme inutile.
+    :ip2       => "192.168.60.1",
     :box       => BOX_VYOS,
     :version   => BOX_VYOS_VERSION,
     :ram       => 1024,
@@ -134,16 +144,55 @@ Vagrant.configure("2") do |config|
                      autostart: machine.fetch(:autostart, true) do |node|
       node.vm.box         = machine[:box]
       node.vm.box_version = machine[:version]
-      node.vm.hostname    = machine[:hostname]
+
+      # VyOS n'est pas un invite reconnu par Vagrant : aucun greffon ne sait y
+      # regler le nom d'hote ni configurer une interface. Le lui demander fait
+      # echouer `vagrant up` en fin de demarrage, machine deja lancee :
+      #   The guest operating system of the machine could not be detected!
+      # On lui laisse donc son nom d'hote et on configure ses interfaces par
+      # son propre systeme (voir le provisionnement plus bas).
+      invite_reconnu = machine.fetch(:bootstrap, true)
+
+      node.vm.hostname = machine[:hostname] if invite_reconnu
+
+      # Le remplacement automatique de la cle SSH est DESACTIVE sur VyOS.
+      # VyOS regenere ~/.ssh/authorized_keys depuis son propre systeme de
+      # configuration a chaque demarrage : la cle inseree par Vagrant est
+      # perdue au premier redemarrage, et `vagrant reload net01` echoue sur
+      #   vyos@127.0.0.1: Permission denied (publickey,password).
+      # La box embarque la cle Vagrant publique dans sa configuration : c'est
+      # elle qu'on utilise, et l'inventaire du TP 13 la designe.
+      node.ssh.insert_key = false unless invite_reconnu
+
+      # VyOS n'est pas auto-detecte par Vagrant. Sans cette declaration,
+      # `vagrant up` echoue APRES le demarrage de la machine :
+      #   The guest operating system of the machine could not be detected!
+      # La cause n'est pas le dossier partage, pourtant desactive ci-dessous :
+      # l'action synced_folders de Vagrant 2.4.9 interroge malgre tout
+      # l'invite (capability?(:persist_mount_shared_folder)) et ne rattrape
+      # pas l'echec de detection.
+      #
+      # VyOS est un Debian : le declarer comme tel court-circuite la
+      # detection. Les capacites Debian qui seraient inadaptees ne sont jamais
+      # sollicitees, puisque le nom d'hote et l'adressage des interfaces sont
+      # tous deux desactives juste au-dessus.
+      node.vm.guest = :debian unless invite_reconnu
 
       # Reseau host-only : c'est l'adresse utilisee par l'inventaire Ansible.
       # eth0 reste le NAT de VirtualBox (10.0.2.15, identique sur toutes les VMs) ;
       # ne jamais s'y fier — voir le piege k3s du module 15.
-      node.vm.network "private_network", ip: machine[:ip]
+      #
+      # `auto_config: false` sur VyOS : la carte est bien attachee par
+      # VirtualBox, mais Vagrant n'essaie pas de l'adresser dans l'invite.
+      node.vm.network "private_network",
+                      ip: machine[:ip],
+                      auto_config: invite_reconnu
 
       # Certaines machines ont une seconde carte sur un reseau applicatif.
       if machine[:ip2]
-        node.vm.network "private_network", ip: machine[:ip2]
+        node.vm.network "private_network",
+                        ip: machine[:ip2],
+                        auto_config: invite_reconnu
       end
 
       # Dossier partage desactive : Ansible travaille en SSH, il n'en a pas besoin.
@@ -165,11 +214,25 @@ Vagrant.configure("2") do |config|
       # Socle minimal : uniquement l'interpreteur Python attendu par Ansible.
       # Le script est televerse par SSH (pas de dependance au dossier partage).
       # Les equipements reseau en sont exemptes.
-      if machine.fetch(:bootstrap, true)
+      if invite_reconnu
         node.vm.provision "shell",
           name:       "socle",
           path:       "bootstrap.sh",
           privileged: true
+      else
+        # VyOS : on donne a eth1 l'adresse attendue par l'inventaire du TP 13,
+        # sans quoi l'equipement n'est joignable que par le NAT.
+        # `privileged: false` : la configuration VyOS se fait sous le compte
+        # `vyos`, JAMAIS en root. Un `configure`/`commit`/`save` lance par
+        # root laisse le systeme de configuration dans un etat ou toute
+        # commande ulterieure de l'utilisateur `vyos` echoue sur un laconique
+        #   Set failed
+        # ce qui rend le TP 13 impraticable.
+        node.vm.provision "shell",
+          name:       "socle reseau",
+          path:       "bootstrap-vyos.sh",
+          args:       [machine[:ip]],
+          privileged: false
       end
     end
   end
