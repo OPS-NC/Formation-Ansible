@@ -10,6 +10,10 @@ exclude_paths:
   - .github/
   - collections/
   - .ansible/
+  # Un fichier chiffre par ansible-vault ne peut pas commencer par `---` :
+  # ansible-lint le lit comme du YAML et signale `yaml[document-start]`.
+  # On exclut donc les fichiers vault du perimetre d'analyse.
+  - "**/vault.yml"
 
 # Regles signalees sans faire echouer, a justifier et resorber.
 warn_list:

@@ -229,6 +229,15 @@ journalisation et dans les artefacts de CI.
 | Historique du shell | `ansible-vault encrypt_string` lit aussi l'entrée standard |
 | Message de commit | Relecture avant poussée |
 
+> **Attention — ansible-lint et les fichiers chiffrés**
+> Un fichier chiffré ne peut pas commencer par `---`. `ansible-lint` le lit pourtant comme du
+> YAML et signale `yaml[document-start]: Missing document start`. Excluez-les explicitement :
+> ```yaml
+> # .ansible-lint
+> exclude_paths:
+>   - "**/vault.yml"
+> ```
+
 ### Règles d'équipe
 
 1. Le fichier de mot de passe vault est dans `.gitignore`, **toujours**.
@@ -302,6 +311,7 @@ ERROR! Decryption failed (no vault secrets were found that could decrypt).
 | Le mot de passe apparaît dans la sortie | `no_log` absent |
 | Le fichier `.vault_pass` est versionné | `.gitignore` incomplet |
 | Différentiel illisible en revue | Fichier entièrement chiffré au lieu de la convention `vault_` |
+| `yaml[document-start]` sur un fichier chiffré | Normal : exclure les fichiers vault du lint |
 
 ### Pour aller plus loin
 
