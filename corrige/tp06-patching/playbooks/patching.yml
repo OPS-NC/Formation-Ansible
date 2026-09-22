@@ -32,7 +32,7 @@
         # sonde de sante du repartiteur pour sortir reellement la machine.
         - name: Sortir la machine de la rotation (temoin)
           ansible.builtin.copy:
-            content: "Maintenance en cours depuis {{ ansible_date_time.iso8601 }}\n"
+            content: "Maintenance en cours depuis {{ ansible_facts['date_time']['iso8601'] }}\n"
             dest: "{{ maj_fichier_maintenance }}"
             owner: root
             group: root
