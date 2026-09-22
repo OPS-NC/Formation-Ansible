@@ -21,7 +21,10 @@
           - address: 192.168.56.51/24
       - name: eth2
         ipv4:
-          - address: 10.10.20.1/24
+          # Reseau applicatif. Il reste dans 192.168.56.0/21 : c'est la seule
+          # plage host-only autorisee par defaut par VirtualBox, et le
+          # Vagrantfile y place la seconde carte de net01.
+          - address: 192.168.60.1/24
 
   tasks:
 

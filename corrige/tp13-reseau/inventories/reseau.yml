@@ -15,7 +15,32 @@ all:
         ansible_connection: ansible.netcommon.network_cli
         # Selectionne les greffons cliconf et terminal du constructeur.
         ansible_network_os: vyos.vyos.vyos
-        ansible_user: vagrant
-        ansible_password: vagrant
+        # VERIFIE sur la box vyos/current : le compte est `vyos`, il n'existe
+        # AUCUN compte `vagrant`, et sshd y est configure avec
+        # PasswordAuthentication no. L'authentification par mot de passe est
+        # donc impossible ; on utilise la cle posee par Vagrant, exactement
+        # comme pour les serveurs du lab.
+        ansible_user: vyos
+        # Contrairement aux serveurs, PAS de cle par machine sous .vagrant/ :
+        # VyOS regenere ses authorized_keys depuis son systeme de
+        # configuration a chaque demarrage, donc une cle inseree par Vagrant
+        # ne survit pas au premier redemarrage. La box embarque la cle
+        # Vagrant publique dans sa configuration : c'est celle-la qu'on
+        # utilise, et le Vagrantfile desactive l'insertion pour net01.
+        # C'est bien la cle RSA : la box date d'aout 2024 et n'embarque que
+        # l'ancienne cle Vagrant publique. Avec vagrant.key.ed25519 :
+        #   ssh connection failed: Failed to authenticate public key:
+        #   Access denied
+        ansible_ssh_private_key_file: "~/.vagrant.d/insecure_private_keys/vagrant.key.rsa"
+
+        # `host_key_auto_add` etait une fonction de paramiko, RETIRE
+        # d'ansible-core 2.21. network_cli passe desormais par libssh, qui
+        # ignore aussi bien cette option que le StrictHostKeyChecking=accept-new
+        # de l'ansible.cfg (reserve au client OpenSSH). Sans cle connue :
+        #   libssh: The authenticity of host '192.168.56.51' can't be
+        #   established due to 'Host is unknown: ...'
+        # La reponse n'est pas de desactiver le controle, mais d'enregistrer
+        # la cle avant la premiere connexion (voir la preparation du TP).
+
         # Les equipements reseau n'ont pas de sudo : pas de become.
         ansible_become: false
