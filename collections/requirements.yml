@@ -21,3 +21,25 @@ collections:
   # Utilisee par les scenarios Molecule pour piloter les conteneurs de test.
   - name: containers.podman
     version: ">=1.16.0"
+
+  # --- Jour 3 : provisioning, reseau, Kubernetes -------------------------
+  - name: community.proxmox
+    version: ">=2.0.0"
+
+  - name: vmware.vmware
+    version: ">=2.10.0"
+
+  - name: vyos.vyos
+    version: ">=6.0.0"
+
+  - name: ansible.netcommon
+    version: ">=8.0.0"
+
+  - name: ansible.utils
+    version: ">=6.0.0"
+
+  - name: netbox.netbox
+    version: ">=3.23.0"
+
+  - name: kubernetes.core
+    version: ">=6.5.0"

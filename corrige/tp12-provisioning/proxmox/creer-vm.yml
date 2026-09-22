@@ -1,0 +1,128 @@
+---
+# TP 12 - Provisionner des VMs sur Proxmox VE 9 par clonage de gabarit.
+#
+# Les modules Proxmox s'executent SUR LE NOEUD DE CONTROLE et dialoguent avec
+# l'API : le play cible donc `localhost`, pas les VMs a creer.
+
+- name: Provisionner des machines sur Proxmox VE
+  hosts: localhost
+  gather_facts: false
+  connection: local
+
+  vars:
+    # Jeton d'API plutot que mot de passe : revocable, limitable a un role.
+    # Ces valeurs viennent du vault (module 11) ou de l'environnement.
+    proxmox_api_host: "{{ lookup('ansible.builtin.env', 'PROXMOX_HOST') | default('pve.lab.local', true) }}"
+    proxmox_api_user: "{{ lookup('ansible.builtin.env', 'PROXMOX_USER') | default('ansible@pve', true) }}"
+    proxmox_api_token_id: "{{ lookup('ansible.builtin.env', 'PROXMOX_TOKEN_ID') | default('automation', true) }}"
+    proxmox_api_token_secret: "{{ lookup('ansible.builtin.env', 'PROXMOX_TOKEN_SECRET') | default('', true) }}"
+    proxmox_node: pve01
+    proxmox_gabarit: debian13-cloudinit
+    proxmox_stockage: local-lvm
+
+    # Les machines a creer sont des DONNEES : en ajouter une ne demande
+    # aucune modification des taches.
+    machines:
+      - nom: app01
+        vmid: 201
+        ip: 192.168.60.11/24
+        cores: 2
+        memoire: 2048
+        tags: [applicatif, dev]
+
+      - nom: app02
+        vmid: 202
+        ip: 192.168.60.12/24
+        cores: 2
+        memoire: 2048
+        tags: [applicatif, dev]
+
+      - nom: cache01
+        vmid: 203
+        ip: 192.168.60.21/24
+        cores: 1
+        memoire: 1024
+        tags: [cache, dev]
+
+    proxmox_passerelle: 192.168.60.254
+    proxmox_dns: 192.168.60.1
+
+  tasks:
+
+    - name: Verifier que le secret d API est fourni
+      ansible.builtin.assert:
+        that:
+          - proxmox_api_token_secret | length > 0
+        fail_msg: >-
+          Definissez PROXMOX_TOKEN_SECRET dans l environnement, ou chiffrez-le
+          avec ansible-vault.
+
+    - name: Cloner le gabarit vers chaque machine
+      community.proxmox.proxmox_kvm:
+        api_host: "{{ proxmox_api_host }}"
+        api_user: "{{ proxmox_api_user }}"
+        api_token_id: "{{ proxmox_api_token_id }}"
+        api_token_secret: "{{ proxmox_api_token_secret }}"
+        node: "{{ proxmox_node }}"
+        clone: "{{ proxmox_gabarit }}"
+        newid: "{{ item.vmid }}"
+        name: "{{ item.nom }}"
+        storage: "{{ proxmox_stockage }}"
+        full: true
+        timeout: 300
+        state: present
+      loop: "{{ machines }}"
+      loop_control:
+        label: "{{ item.nom }} ({{ item.vmid }})"
+
+    - name: Ajuster les ressources et la configuration cloud-init
+      community.proxmox.proxmox_kvm:
+        api_host: "{{ proxmox_api_host }}"
+        api_user: "{{ proxmox_api_user }}"
+        api_token_id: "{{ proxmox_api_token_id }}"
+        api_token_secret: "{{ proxmox_api_token_secret }}"
+        node: "{{ proxmox_node }}"
+        vmid: "{{ item.vmid }}"
+        cores: "{{ item.cores }}"
+        memory: "{{ item.memoire }}"
+        # cloud-init : l'invite se configure seul au premier demarrage.
+        ciuser: ansible
+        cicustom: ""
+        sshkeys: "{{ lookup('ansible.builtin.file', lookup('ansible.builtin.env', 'HOME') + '/.ssh/id_ed25519.pub') }}"
+        ipconfig:
+          ipconfig0: "ip={{ item.ip }},gw={{ proxmox_passerelle }}"
+        nameservers: "{{ proxmox_dns }}"
+        searchdomains: lab.local
+        update: true
+        state: present
+      loop: "{{ machines }}"
+      loop_control:
+        label: "{{ item.nom }}"
+
+    - name: Demarrer les machines
+      community.proxmox.proxmox_kvm:
+        api_host: "{{ proxmox_api_host }}"
+        api_user: "{{ proxmox_api_user }}"
+        api_token_id: "{{ proxmox_api_token_id }}"
+        api_token_secret: "{{ proxmox_api_token_secret }}"
+        node: "{{ proxmox_node }}"
+        vmid: "{{ item.vmid }}"
+        state: started
+      loop: "{{ machines }}"
+      loop_control:
+        label: "{{ item.nom }}"
+
+    - name: Attendre l ouverture du service SSH
+      ansible.builtin.wait_for:
+        host: "{{ item.ip | ansible.utils.ipaddr('address') }}"
+        port: 22
+        timeout: 300
+        delay: 10
+      loop: "{{ machines }}"
+      loop_control:
+        label: "{{ item.nom }}"
+
+    # Les machines existent : on rafraichit l'inventaire dynamique et on
+    # enchaine sur la configuration, sans jamais ecrire d'inventaire statique.
+    - name: Recharger l inventaire dynamique
+      ansible.builtin.meta: refresh_inventory

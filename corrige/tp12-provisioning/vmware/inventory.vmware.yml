@@ -1,0 +1,27 @@
+---
+# Inventaire dynamique vSphere.
+#
+# `vmware.vmware.vms` remplace `community.vmware.vmware_vm_inventory`, qui est
+# DEPRECIE et sera retire en community.vmware 7.0.0.
+plugin: vmware.vmware.vms
+
+hostname: vcenter.lab.local
+username: ansible@vsphere.local
+password: "{{ lookup('ansible.builtin.env', 'VMWARE_PASSWORD') }}"
+validate_certs: false
+
+# Restreindre la recherche : sur un vCenter de production, tout remonter est
+# long et inutile.
+search_paths:
+  - /DC-Noumea/vm/Formation
+
+keyed_groups:
+  - key: guest.guestId
+    prefix: os
+    separator: "_"
+  - key: runtime.powerState
+    prefix: etat
+    separator: "_"
+
+compose:
+  ansible_host: guest.ipAddress | default(name)

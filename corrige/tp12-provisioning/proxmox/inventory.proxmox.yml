@@ -1,0 +1,45 @@
+---
+# Inventaire dynamique Proxmox VE.
+#
+# Le fichier DOIT se terminer par .proxmox.yml ou .proxmox.yaml pour que le
+# greffon `auto` le reconnaisse.
+plugin: community.proxmox.proxmox
+
+url: https://pve.lab.local:8006
+user: ansible@pve
+token_id: automation
+token_secret: "{{ lookup('ansible.builtin.env', 'PROXMOX_TOKEN_SECRET') }}"
+
+validate_certs: false
+
+# Remonte les donnees de l API (statut, ressources, tags) comme variables.
+want_facts: true
+
+# Inclut aussi les noeuds de l hyperviseur, pas seulement les VMs.
+want_proxmox_nodes_ansible_host: true
+
+# Statuts detailles des machines QEMU (running, stopped, paused...).
+qemu_extended_statuses: true
+
+# Prefixe des groupes generes, pour ne pas entrer en collision avec les
+# groupes de l inventaire statique.
+group_prefix: pve_
+
+# Ne garder que les machines demarrees et etiquetees `dev`.
+filters:
+  - "proxmox_status == 'running'"
+
+keyed_groups:
+  # Un groupe par tag Proxmox : c'est le lien entre l'hyperviseur et Ansible.
+  - key: proxmox_tags_parsed
+    prefix: tag
+    separator: "_"
+
+  - key: proxmox_node
+    prefix: noeud
+    separator: "_"
+
+compose:
+  # L adresse de connexion vient de l agent QEMU si disponible.
+  ansible_host: proxmox_agent_interfaces[0].ip_addresses[0] | default(proxmox_name)
+  memoire_go: (proxmox_maxmem / 1073741824) | round(1)

@@ -1,0 +1,63 @@
+---
+# TP 12 - Deployer des VMs sur vSphere depuis un gabarit.
+#
+# Collection `vmware.vmware` (certifiee Red Hat), qui remplace progressivement
+# `community.vmware`. Comme pour Proxmox, tout s'execute sur le noeud de
+# controle et dialogue avec l'API vCenter.
+
+- name: Deployer des machines sur vSphere
+  hosts: localhost
+  gather_facts: false
+  connection: local
+
+  vars:
+    vcenter_hostname: "{{ lookup('ansible.builtin.env', 'VMWARE_HOST') | default('vcenter.lab.local', true) }}"
+    vcenter_username: "{{ lookup('ansible.builtin.env', 'VMWARE_USER') | default('ansible@vsphere.local', true) }}"
+    vcenter_password: "{{ lookup('ansible.builtin.env', 'VMWARE_PASSWORD') | default('', true) }}"
+
+    vsphere_datacenter: DC-Noumea
+    vsphere_cluster: CL-Production
+    vsphere_datastore: DS-SSD-01
+    vsphere_dossier_vm: /DC-Noumea/vm/Formation
+    vsphere_gabarit: debian13-template
+
+    machines:
+      - nom: app01
+        cpu: 2
+        memoire: 2048
+      - nom: app02
+        cpu: 2
+        memoire: 2048
+
+  tasks:
+
+    - name: Verifier que le mot de passe est fourni
+      ansible.builtin.assert:
+        that:
+          - vcenter_password | length > 0
+        fail_msg: Definissez VMWARE_PASSWORD dans l environnement ou au vault.
+
+    - name: Deployer chaque machine depuis le gabarit
+      vmware.vmware.deploy_folder_template:
+        hostname: "{{ vcenter_hostname }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        validate_certs: false
+        datacenter: "{{ vsphere_datacenter }}"
+        cluster: "{{ vsphere_cluster }}"
+        datastore: "{{ vsphere_datastore }}"
+        template_name: "{{ vsphere_gabarit }}"
+        vm_name: "{{ item.nom }}"
+        vm_folder: "{{ vsphere_dossier_vm }}"
+        power_on_after_deploy: true
+      loop: "{{ machines }}"
+      loop_control:
+        label: "{{ item.nom }}"
+      register: deploiement
+
+    - name: Resumer le deploiement
+      ansible.builtin.debug:
+        msg: "{{ machines | map(attribute='nom') | join(', ') }} deployees dans {{ vsphere_dossier_vm }}"
+
+    - name: Recharger l inventaire dynamique
+      ansible.builtin.meta: refresh_inventory
