@@ -250,6 +250,19 @@ ansible-galaxy collection install vyos.vyos ansible.netcommon ansible.utils
 #   ansible-pylibssh   : transport SSH de network_cli (paramiko a ete retire
 #                        d'ansible-core 2.21)
 pipx inject ansible ntc-templates ansible-pylibssh
+
+# Enregistrer la cle d'hote du routeur AVANT la premiere connexion.
+# Indispensable : network_cli passe par libssh, qui ignore le
+# StrictHostKeyChecking=accept-new de l'ansible.cfg (reserve au client
+# OpenSSH). L'option host_key_auto_add, elle, appartenait a paramiko, RETIRE
+# d'ansible-core 2.21 : elle n'a plus aucun effet.
+# Sans cette etape :
+#   libssh: The authenticity of host '192.168.56.51' can't be established
+#
+# La forme HACHEE (`ssh-keyscan -H`) n'est PAS lue par libssh : ne pas
+# l'utiliser ici. A rejouer apres chaque `vagrant destroy net01`.
+ssh-keygen -R 192.168.56.51
+ssh-keyscan 192.168.56.51 >> ~/.ssh/known_hosts
 ```
 
 ### Énoncé

@@ -14,6 +14,13 @@ exclude_paths:
   # ansible-lint le lit comme du YAML et signale `yaml[document-start]`.
   # On exclut donc les fichiers vault du perimetre d'analyse.
   - "**/vault.yml"
+  # Artefacts PRODUITS par le TP 13 : la configuration relue sur le routeur et
+  # les sauvegardes horodatees de vyos_config. Ce ne sont pas des sources du
+  # depot, et leur mise en forme est celle du module, pas la notre. Sans cette
+  # exclusion, executer le TP 13 fait echouer `ansible-lint corrige/` - donc
+  # aussi le workflow de CI du depot.
+  - corrige/tp13-reseau/fixtures/interfaces-existantes.yml
+  - corrige/tp13-reseau/fixtures/sauvegardes/
 
 # Regles signalees sans faire echouer, a justifier et resorber.
 warn_list:

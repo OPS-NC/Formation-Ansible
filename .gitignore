@@ -36,6 +36,10 @@ rapport-patching.json
 # Contexte de construction genere par `ansible-builder build` (TP 09).
 context/
 
+# Artefacts produits par le TP 13 (relecture et sauvegardes du routeur).
+corrige/tp13-reseau/fixtures/interfaces-existantes.yml
+corrige/tp13-reseau/fixtures/sauvegardes/
+
 # Kubeconfig genere par le TP 14 : donne un acces administrateur au cluster.
 corrige/tp14-k3s/kubeconfig
 kubeconfig
