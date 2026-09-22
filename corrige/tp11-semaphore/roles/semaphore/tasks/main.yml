@@ -1,0 +1,156 @@
+---
+# Role semaphore - installation non interactive de Semaphore UI Community.
+#
+# Le paquet .deb ne fournit QUE le binaire /usr/bin/semaphore : ni utilisateur
+# systeme, ni unite systemd, ni repertoire de configuration. Tout le reste est
+# a la charge de ce role.
+
+- name: Installer les prerequis
+  ansible.builtin.package:
+    name:
+      - git                 # exige par Semaphore pour cloner les depots
+      - ansible-core        # Semaphore appelle ansible-playbook en local
+      - openssl
+    state: present
+
+- name: Creer le compte de service
+  ansible.builtin.user:
+    name: "{{ semaphore_utilisateur }}"
+    system: true
+    home: "{{ semaphore_repertoire_donnees }}"
+    create_home: false
+    shell: /usr/sbin/nologin
+    state: present
+
+- name: Creer les repertoires
+  ansible.builtin.file:
+    path: "{{ item.chemin }}"
+    state: directory
+    owner: "{{ item.proprietaire }}"
+    group: "{{ semaphore_utilisateur }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - { chemin: "{{ semaphore_repertoire_config }}", proprietaire: root, mode: "0750" }
+    - { chemin: "{{ semaphore_repertoire_donnees }}", proprietaire: "{{ semaphore_utilisateur }}", mode: "0750" }
+    - { chemin: "{{ semaphore_repertoire_donnees }}/tmp", proprietaire: "{{ semaphore_utilisateur }}", mode: "0750" }
+    - { chemin: "{{ semaphore_repertoire_donnees }}/secrets", proprietaire: "{{ semaphore_utilisateur }}", mode: "0700" }
+    - { chemin: "{{ semaphore_repertoire_donnees }}/repositories", proprietaire: "{{ semaphore_utilisateur }}", mode: "0750" }
+  loop_control:
+    label: "{{ item.chemin }}"
+
+- name: Telecharger le paquet Debian
+  ansible.builtin.get_url:
+    url: "{{ semaphore_url }}"
+    dest: "/tmp/{{ semaphore_paquet }}"
+    mode: "0644"
+
+- name: Installer Semaphore
+  ansible.builtin.apt:
+    deb: "/tmp/{{ semaphore_paquet }}"
+    state: present
+
+# --- Cles de chiffrement -------------------------------------------------
+# Elles ne doivent etre generees QU'UNE FOIS : les regenerer a chaque
+# execution rendrait le role non idempotent et, surtout, rendrait illisibles
+# les identifiants deja stockes dans le Key Store.
+
+- name: Verifier si une configuration existe deja
+  ansible.builtin.stat:
+    path: "{{ semaphore_repertoire_config }}/config.json"
+  register: semaphore_config_existante
+
+- name: Lire la configuration existante
+  ansible.builtin.slurp:
+    src: "{{ semaphore_repertoire_config }}/config.json"
+  register: semaphore_config_brute
+  when: semaphore_config_existante.stat.exists
+
+- name: Reutiliser les cles existantes
+  ansible.builtin.set_fact:
+    semaphore_cookie_hash: "{{ semaphore_config_lue.cookie_hash }}"
+    semaphore_cookie_encryption: "{{ semaphore_config_lue.cookie_encryption }}"
+    semaphore_access_key_encryption: "{{ semaphore_config_lue.access_key_encryption }}"
+  vars:
+    semaphore_config_lue: "{{ semaphore_config_brute.content | b64decode | from_json }}"
+  when: semaphore_config_existante.stat.exists
+  no_log: true
+
+# Semaphore attend 32 octets aleatoires encodes en base64, soit 44 caracteres.
+- name: Generer les cles au premier deploiement
+  ansible.builtin.set_fact:
+    semaphore_cookie_hash: "{{ lookup('ansible.builtin.password', '/dev/null', chars=['ascii_letters', 'digits'], length=32) | b64encode }}"
+    semaphore_cookie_encryption: "{{ lookup('ansible.builtin.password', '/dev/null', chars=['ascii_letters', 'digits'], length=32) | b64encode }}"
+    semaphore_access_key_encryption: "{{ lookup('ansible.builtin.password', '/dev/null', chars=['ascii_letters', 'digits'], length=32) | b64encode }}"
+  when: not semaphore_config_existante.stat.exists
+  no_log: true
+
+- name: Deposer la configuration
+  ansible.builtin.template:
+    src: config.json.j2
+    dest: "{{ semaphore_repertoire_config }}/config.json"
+    owner: root
+    group: "{{ semaphore_utilisateur }}"
+    mode: "0640"
+  notify: Redemarrer Semaphore
+
+- name: Appliquer les migrations de base de donnees
+  ansible.builtin.command:
+    cmd: /usr/bin/semaphore migrate --config {{ semaphore_repertoire_config }}/config.json
+  become: true
+  become_user: "{{ semaphore_utilisateur }}"
+  register: semaphore_migration
+  changed_when: "'Creating migration' in semaphore_migration.stdout"
+
+- name: Deployer l unite systemd
+  ansible.builtin.template:
+    src: semaphore.service.j2
+    dest: /etc/systemd/system/semaphore.service
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Redemarrer Semaphore
+
+- name: Activer et demarrer Semaphore
+  ansible.builtin.systemd_service:
+    name: semaphore
+    state: started
+    enabled: true
+    daemon_reload: true
+
+# --- Compte administrateur -----------------------------------------------
+# `semaphore user add` n'est PAS idempotent : il echoue si le compte existe.
+# On interroge donc la liste avant de decider.
+
+- name: Lister les comptes existants
+  ansible.builtin.command:
+    cmd: /usr/bin/semaphore user list --config {{ semaphore_repertoire_config }}/config.json
+  become: true
+  become_user: "{{ semaphore_utilisateur }}"
+  register: semaphore_comptes
+  changed_when: false
+  failed_when: false
+
+- name: Creer le compte administrateur
+  ansible.builtin.command:
+    cmd: >-
+      /usr/bin/semaphore user add --admin
+      --login {{ semaphore_admin_login }}
+      --name "{{ semaphore_admin_nom }}"
+      --email {{ semaphore_admin_email }}
+      --password {{ semaphore_admin_motdepasse }}
+      --config {{ semaphore_repertoire_config }}/config.json
+  become: true
+  become_user: "{{ semaphore_utilisateur }}"
+  when: semaphore_admin_login not in (semaphore_comptes.stdout | default(''))
+  changed_when: true
+  no_log: true
+
+- name: Attendre que l interface reponde
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ semaphore_port }}/api/ping"
+    status_code: [200, 404]
+  register: semaphore_sante
+  until: semaphore_sante.status in [200, 404]
+  retries: 12
+  delay: 5
+  when: not ansible_check_mode

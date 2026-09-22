@@ -1,0 +1,7 @@
+---
+- name: Deploiement de l interface web Semaphore
+  hosts: ops
+  become: true
+  roles:
+    - role: semaphore
+      semaphore_admin_motdepasse: "{{ vault_semaphore_admin | default('changeme-formation') }}"

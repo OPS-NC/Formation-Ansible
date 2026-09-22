@@ -1,0 +1,22 @@
+{
+  "dialect": "{{ semaphore_dialecte }}",
+  "sqlite": {
+    "host": "{{ semaphore_repertoire_donnees }}/database.sqlite"
+  },
+  "port": ":{{ semaphore_port }}",
+  "interface": "",
+  "web_host": "{{ semaphore_web_host }}",
+  "tmp_path": "{{ semaphore_repertoire_donnees }}/tmp",
+  "dirs": {
+    "secrets": "{{ semaphore_repertoire_donnees }}/secrets",
+    "repos": "{{ semaphore_repertoire_donnees }}/repositories"
+  },
+  "git_client": "cmd_git",
+  "cookie_hash": "{{ semaphore_cookie_hash }}",
+  "cookie_encryption": "{{ semaphore_cookie_encryption }}",
+  "access_key_encryption": "{{ semaphore_access_key_encryption }}",
+  "max_parallel_tasks": {{ semaphore_max_taches_paralleles }},
+  "schedule": {
+    "timezone": "{{ semaphore_timezone }}"
+  }
+}

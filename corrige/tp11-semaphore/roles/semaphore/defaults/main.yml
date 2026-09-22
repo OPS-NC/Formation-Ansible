@@ -1,0 +1,25 @@
+---
+# Edition Community (MIT). Le paquet sans suffixe est le binaire Pro, qui
+# fonctionne sans licence mais avec les fonctions avancees verrouillees.
+# Les deux paquets portent le meme nom et s'ecrasent mutuellement.
+semaphore_version: "2.19.12"
+semaphore_paquet: "semaphore_community_{{ semaphore_version }}_linux_amd64.deb"
+semaphore_url: >-
+  https://github.com/semaphoreui/semaphore/releases/download/v{{ semaphore_version }}/{{ semaphore_paquet }}
+
+semaphore_utilisateur: semaphore
+semaphore_repertoire_config: /etc/semaphore
+semaphore_repertoire_donnees: /var/lib/semaphore
+semaphore_port: 3000
+semaphore_web_host: "http://{{ ansible_host | default(inventory_hostname) }}:{{ semaphore_port }}"
+
+# BoltDB a ete supprime en 2.19 : seuls sqlite, mysql et postgres subsistent.
+semaphore_dialecte: sqlite
+
+semaphore_admin_login: admin
+semaphore_admin_nom: "Administrateur formation"
+semaphore_admin_email: admin@lab.local
+semaphore_admin_motdepasse: "changeme-formation"
+
+semaphore_timezone: "{{ parc_timezone | default('UTC') }}"
+semaphore_max_taches_paralleles: 5
