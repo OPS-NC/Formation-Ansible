@@ -21,12 +21,25 @@ Réutilise l'inventaire du [TP 02](../tp02-inventaire/). Le play ne cible que le
 I=corrige/tp02-inventaire/inventories/dev/hosts.yml
 P=corrige/tp04-nginx/playbooks/web.yml
 
+ansible-playbook -i $I $P --syntax-check
 ansible-lint corrige/tp04-nginx/
-ansible-playbook -i $I $P --check --diff
-ansible-playbook -i $I $P
+
+ansible-playbook -i $I $P          # 1re convergence : la machine est vierge
 ansible-playbook -i $I $P          # idempotence : changed=0
+ansible-playbook -i $I $P --check --diff   # audit de derive, desormais possible
+
+# Sans en-tete Host, nginx sert le vhost par defaut du port 80. Les fichiers de
+# sites-enabled sont inclus par ordre alphabetique : `ancien` passe avant
+# `vitrine` et renvoie donc une redirection 301, pas la page d'accueil.
 curl -s http://192.168.56.11/ | head -5
+curl -s -H 'Host: vitrine.lab.local' http://192.168.56.11/ | head -5
 ```
+
+> **L'ordre n'est pas interchangeable.** Sur une machine vierge, `--check` ne peut pas valider
+> l'ensemble du playbook : les paquets n'y sont pas installes, donc les taches qui portent sur
+> le service ou le compte qu'ils fournissent echouent. La simulation prend tout son sens
+> **apres** la premiere convergence, comme audit de derive. Voir
+> [module 04](../../J1-Socle/04-Playbooks.md#--check--le-mode-simulation).
 
 ## Les trois sites et ce qu'ils démontrent
 

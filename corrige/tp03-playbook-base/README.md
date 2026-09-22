@@ -31,10 +31,17 @@ P=corrige/tp03-playbook-base/playbooks/base.yml
 
 ansible-playbook -i $I $P --syntax-check
 ansible-lint corrige/tp03-playbook-base/
-ansible-playbook -i $I $P --check --diff
-ansible-playbook -i $I $P
+
+ansible-playbook -i $I $P          # 1re convergence : la machine est vierge
 ansible-playbook -i $I $P          # idempotence : changed=0
+ansible-playbook -i $I $P --check --diff   # audit de derive, desormais possible
 ```
+
+> **L'ordre n'est pas interchangeable.** Sur une machine vierge, `--check` ne peut pas valider
+> l'ensemble du playbook : les paquets n'y sont pas installes, donc les taches qui portent sur
+> le service ou le compte qu'ils fournissent echouent. La simulation prend tout son sens
+> **apres** la premiere convergence, comme audit de derive. Voir
+> [module 04](../../J1-Socle/04-Playbooks.md#--check--le-mode-simulation).
 
 ## Ce que le corrigé illustre
 
