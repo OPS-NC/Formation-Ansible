@@ -3,6 +3,14 @@
 #
 # `vmware.vmware.vms` remplace `community.vmware.vmware_vm_inventory`, qui est
 # DEPRECIE et sera retire en community.vmware 7.0.0.
+#
+# ATTENTION AU NOM DU FICHIER. Le greffon ne reconnait pas la meme convention
+# que celui de Proxmox : son verify_file() n'accepte que les noms terminant
+# par vms.yml, vms.yaml, vmware_vms.yml ou vmware_vms.yaml. Un fichier nomme
+# `inventory.vmware.yml` est refuse sans que le greffon soit meme charge :
+#   [WARNING]: Failed to parse inventory with 'auto' plugin: inventory source
+#   '.../inventory.vmware.yml' could not be verified by inventory plugin
+#   'vmware.vmware.vms'
 plugin: vmware.vmware.vms
 
 hostname: vcenter.lab.local
