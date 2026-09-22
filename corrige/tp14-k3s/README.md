@@ -23,7 +23,14 @@ pipx inject ansible 'kubernetes>=24.2.0' jsonpatch
 ansible-galaxy collection install kubernetes.core
 
 # Binaires appeles par les modules et par le TP, absents du parcours jusqu'ici
-sudo apt install -y kubernetes-client          # kubectl
+# kubectl : le paquet `kubernetes-client` N'EXISTE PAS dans Ubuntu 26.04
+#   $ apt-cache policy kubernetes-client
+#   kubernetes-client:
+#     Installe : (aucun)
+#     Candidat : (aucun)
+# Le snap Canonical est la voie la plus courte ; en production, preferez le
+# depot officiel pkgs.k8s.io, versionne par mineure de Kubernetes.
+sudo snap install kubectl --classic
 curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 ```
 
