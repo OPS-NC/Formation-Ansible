@@ -122,12 +122,34 @@ ansible.builtin.winrm   Run tasks over Microsoft's WinRM
 
 ## 2. Installer l'hyperviseur et Vagrant
 
-### 2.1 VirtualBox — depuis le dépôt Oracle, pas depuis `multiverse`
+### 2.1 VirtualBox et le noyau 7.0
 
 Ubuntu 26.04 embarque le noyau Linux 7.0. La compilation du module `vboxdrv` échouait sur ce
-noyau (`implicit declaration of function 'ASMCpuIdEx_EDX'`) jusqu'à VirtualBox **7.2.8**.
-Le paquet `multiverse` d'Ubuntu 26.04 est en 7.2.6, **antérieur au correctif**, et il entre en
-conflit avec le paquet Oracle. Utilisez le dépôt Oracle, qui fournit 7.2.18.
+noyau (`implicit declaration of function 'ASMCpuIdEx_EDX'`) dans les sources **amont**
+jusqu'à VirtualBox **7.2.8**.
+
+Le paquet `multiverse` d'Ubuntu 26.04 est en 7.2.6, mais il **embarque le correctif
+rétroporté** : `virtualbox-dkms` 7.2.6-dfsg-4 se construit et se charge sans erreur sur le
+noyau 7.0. Vérifié sur Ubuntu 26.04.1 / noyau 7.0.0-31 :
+
+```console
+$ dkms status
+virtualbox/7.2.6, 7.0.0-31-generic, x86_64: installed
+$ lsmod | grep vboxdrv
+vboxdrv               741376  2 vboxnetadp,vboxnetflt
+```
+
+**Le lab fonctionne donc avec le paquet `multiverse`.** Le dépôt Oracle reste néanmoins la
+voie recommandée : il fournit 7.2.18, corrigée en amont, et suit les mises à jour du noyau
+sans attendre le rétroportage d'Ubuntu.
+
+> **Attention**
+> Les deux paquets sont en conflit. Si VirtualBox est déjà installé depuis `multiverse` et
+> que le lab démarre, **n'y touchez pas** : basculer vers Oracle impose de désinstaller
+> `virtualbox`, `virtualbox-dkms` et `virtualbox-qt` au préalable. Ne faites la bascule que
+> si la compilation DKMS échoue réellement.
+
+Pour une installation neuve, depuis le dépôt Oracle :
 
 ```bash
 sudo apt install -y build-essential dkms linux-headers-generic
@@ -387,7 +409,7 @@ dans l'`ansible.cfg` du dépôt (§4.2). Sans ce réglage, la même commande ré
 | `UNREACHABLE ... Connection timed out` | VM arrêtée, ou IP host-only erronée | `vagrant status`, vérifier `ansible_host` |
 | `ansible-core 2.20` installé | Paquet `apt` prioritaire dans le PATH | `which -a ansible`, désinstaller le paquet apt |
 | La configuration semble ignorée | Répertoire *world-writable*, ou mauvais répertoire courant | `ansible-config view` |
-| `vagrant up` échoue sur `vboxdrv` | Secure Boot, ou VirtualBox antérieur à 7.2.8 | §2.1 |
+| `vagrant up` échoue sur `vboxdrv` | Secure Boot, ou build DKMS en échec | §2.1 — `dkms status`, `sudo dpkg-reconfigure virtualbox-dkms` |
 
 ### Pour aller plus loin
 
@@ -401,7 +423,8 @@ dans l'`ansible.cfg` du dépôt (§4.2). Sans ce réglage, la même commande ré
 
 - Les paquets des distributions sont en retard : on installe avec **pipx**, pas avec `apt`.
 - **PEP 668** interdit `pip install --user` ; `--break-system-packages` est à proscrire.
-- **VirtualBox doit venir du dépôt Oracle** sur Ubuntu 26.04 (noyau 7.0).
+- **VirtualBox** : le paquet `multiverse` 7.2.6 d'Ubuntu 26.04 fonctionne (correctif noyau 7.0
+  rétroporté) ; le dépôt Oracle reste préférable pour une installation neuve.
 - Le **registre de boxes Vagrant ferme le 31 décembre 2026** : conservez vos `.box`.
 - `ansible.cfg` : **le premier fichier trouvé gagne**, et un répertoire *world-writable* le
   fait ignorer.
