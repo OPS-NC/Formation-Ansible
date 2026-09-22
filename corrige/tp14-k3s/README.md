@@ -94,5 +94,16 @@ Trois adresses identiques, ou en 10.0.2.15, signalent que `node-ip` n'a pas ét�
 | `kubernetes.core` | 6.5+ (Helm 4 supporté depuis 6.4) |
 | Client Python | `kubernetes >= 24.2.0`, `jsonpatch` |
 
-> À valider sur la machine Ubuntu : le cluster n'a pas pu être monté lors de la rédaction.
-> L'ensemble passe `--syntax-check` et `ansible-lint` au profil production.
+> **Validé** : cluster monté en 1 min 09 s, trois nœuds `Ready` avec des adresses internes
+> **distinctes** — le piège du `node-ip` est bien traité.
+>
+> ```
+> NAME         STATUS   ROLES           VERSION        INTERNAL-IP
+> k3s-master   Ready    control-plane   v1.36.4+k3s1   192.168.56.41
+> k3s-node01   Ready    <none>          v1.36.4+k3s1   192.168.56.42
+> k3s-node02   Ready    <none>          v1.36.4+k3s1   192.168.56.43
+> ```
+>
+> `cluster.yml`, `application.yml` (Deployment 3/3, Service, Ingress, chart Helm
+> podinfo 6.15.0) et `maintenance.yml` (drain puis uncordon) passent tous, et `cluster.yml`
+> comme `application.yml` sont idempotents (`changed=0` au second passage).

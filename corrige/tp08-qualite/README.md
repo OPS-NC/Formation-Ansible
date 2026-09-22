@@ -72,6 +72,16 @@ Ces images embarquent systemd, indispensable pour tester un rôle qui démarre u
 Les images officielles `debian:trixie` et `rockylinux/rockylinux:10` ne conviennent pas
 en l'état ; la variante `rockylinux/rockylinux:10-ubi-init` est l'exception côté Rocky.
 
-> À valider sur la machine Ubuntu : l'exécution effective de `molecule test` avec podman
-> rootless. La configuration a été validée par `molecule list`, mais aucun conteneur n'a
-> été démarré lors de la rédaction.
+> **Validé** sur Ubuntu 26.04, podman 5.7.0 rootless (crun, overlay) : `molecule test`
+> complet en 1 min 40 s.
+>
+> ```
+> default ➜ dependency:  Successful
+> default ➜ destroy:     Successful
+> default ➜ create:      Successful
+> default ➜ converge:    Successful   debian13 ok=14 changed=8 / rocky10 ok=11 changed=6
+> default ➜ idempotence: Successful   changed=0 sur les deux
+> default ➜ verify:      Successful
+> default ➜ destroy:     Successful
+> default : actions=7  successful=6  failed=0
+> ```

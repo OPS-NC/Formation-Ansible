@@ -111,6 +111,20 @@ comme le fait `03-hors-ligne.yml`.
 | FRRouting | Collection `frr.frr` en fin de vie, incompatible ansible-core 2.21 |
 | **VyOS** | Box `vyos/current` figée depuis août 2024, mais fonctionnelle |
 
-> À valider sur la machine Ubuntu : les playbooks 01 et 02 n'ont pas pu être exécutés contre un
-> VyOS réel lors de la rédaction. Ils passent `--syntax-check` et `ansible-lint` au profil
-> production. Le playbook 03 a été exécuté et son résultat est reproduit ci-dessus.
+> **Validé** contre un VyOS réel (`vyos/current` 20240817.00.20, VyOS 1.5-rolling-202408170020).
+> La box est bien disponible au téléchargement, et la seconde carte `eth2` existe.
+>
+> ```
+> 01-decouverte     ok=5 changed=1 failed=0
+>                   msg: vyos modele=VirtualBox version=VyOS 1.5-rolling-202408170020
+> 02-configuration  ok=7 changed=3 failed=0
+>                   assertions d'adresses ET d'idempotence au vert
+> 03-hors-ligne     ok=4 changed=0 failed=0
+> ```
+>
+> Y parvenir a demandé six corrections, décrites dans les commits `fix(tp13)` : plage
+> host-only, détection de l'invité, adressage des interfaces, insertion de clé SSH, compte
+> et type de clé, et provisionnement non privilégié.
+>
+> **Non validé** : NetBox comme source de vérité, et les états `rendered` / `parsed` hors
+> ligne, dont la limite est décrite plus bas.
