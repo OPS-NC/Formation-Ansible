@@ -1,0 +1,5 @@
+---
+# Surcharge du TP 02 : elements propres au patching RHEL-like.
+# `dnf needs-restarting -r` renvoie 1 quand un redemarrage est requis.
+maj_commande_reboot: "/usr/bin/dnf needs-restarting -r"
+maj_rc_reboot_requis: 1

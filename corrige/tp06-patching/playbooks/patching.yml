@@ -1,0 +1,130 @@
+---
+# TP 06 - Mise a jour orchestree du parc.
+#
+# Objectif : mettre a jour les serveurs UN PAR UN, en les sortant de la
+# rotation pendant l'operation, avec retour arriere en cas d'echec et
+# rapport consolide en fin d'execution.
+
+- name: Mise a jour orchestree des serveurs
+  hosts: serveurs
+  become: true
+
+  # Une machine a la fois. Le parc reste disponible pendant l'operation.
+  # `serial: [1, 2]` ferait un premier lot de 1 (canari) puis des lots de 2.
+  serial: 1
+
+  # Arreter tout le deploiement des la premiere machine en echec, au lieu de
+  # continuer et de casser le parc entier.
+  max_fail_percentage: 0
+
+  vars:
+    maj_fichier_maintenance: /var/www/formation/MAINTENANCE
+    maj_autoriser_reboot: true
+
+  tasks:
+
+    - name: Operation de mise a jour
+      block:
+
+        - name: Sortir la machine de la rotation
+          ansible.builtin.copy:
+            content: "Maintenance en cours depuis {{ ansible_date_time.iso8601 }}\n"
+            dest: "{{ maj_fichier_maintenance }}"
+            owner: root
+            group: root
+            mode: "0644"
+          when: "'web' in group_names"
+
+        - name: Mettre a jour tous les paquets
+          ansible.builtin.package:
+            name: "*"
+            state: latest      # noqa package-latest
+          register: maj_paquets
+
+        # Le mecanisme de detection differe structurellement d'une famille a
+        # l'autre : fichier temoin sur Debian, code retour d'une commande sur
+        # RHEL. Ce n'est pas une simple difference de VALEUR, donc les variables
+        # de groupe ne suffisent pas a elles seules : on normalise le resultat.
+        - name: Determiner si un redemarrage est necessaire
+          ansible.builtin.command: "{{ maj_commande_reboot }}"
+          register: maj_test_reboot
+          changed_when: false
+          failed_when: false
+
+        - name: Normaliser le resultat du test
+          ansible.builtin.set_fact:
+            maj_reboot_requis: "{{ maj_test_reboot.rc == maj_rc_reboot_requis }}"
+
+        - name: Redemarrer la machine si necessaire
+          ansible.builtin.reboot:
+            reboot_timeout: 300
+            test_command: /usr/bin/true
+          when:
+            - maj_reboot_requis | bool
+            - maj_autoriser_reboot | bool
+
+        - name: Attendre que le service web reponde
+          ansible.builtin.uri:
+            url: "http://127.0.0.1:{{ http_port }}/"
+            status_code: [200, 301]
+          register: maj_sante
+          until: maj_sante.status in [200, 301]
+          retries: 12
+          delay: 5
+          when: "'web' in group_names"
+
+      rescue:
+        # Execute uniquement si une tache du `block` a echoue.
+        - name: Tracer l echec
+          ansible.builtin.debug:
+            msg: >-
+              Echec de la mise a jour sur {{ inventory_hostname }}.
+              La machine reste hors rotation pour investigation.
+
+        - name: Interrompre le deploiement
+          ansible.builtin.fail:
+            msg: "Mise a jour interrompue sur {{ inventory_hostname }}"
+
+      always:
+        # Execute dans tous les cas, succes comme echec.
+        - name: Remettre la machine en rotation
+          ansible.builtin.file:
+            path: "{{ maj_fichier_maintenance }}"
+            state: absent
+          when:
+            - "'web' in group_names"
+            - maj_sante is defined
+            - not (maj_sante.failed | default(true))
+
+- name: Rapport de mise a jour
+  hosts: serveurs
+  gather_facts: false
+
+  tasks:
+    - name: Ecrire le rapport sur le noeud de controle
+      ansible.builtin.copy:
+        content: "{{ rapport | to_nice_json }}\n"
+        dest: "{{ playbook_dir }}/../rapport-patching.json"
+        mode: "0644"
+      vars:
+        rapport:
+          date: "{{ now(utc=true).isoformat() }}"
+          # dict(zip(...)) associe chaque machine a son etat.
+          # `map('extract', hostvars, 'cle')` lit la variable sur chaque hote.
+          redemarrage_requis: >-
+            {{ dict(ansible_play_hosts_all
+                    | zip(ansible_play_hosts_all
+                          | map('extract', hostvars, 'maj_reboot_requis')
+                          | list)) }}
+      # `run_once` : une seule execution pour tout le play.
+      # `delegate_to: localhost` : elle a lieu sur le noeud de controle.
+      # Les deux vont presque toujours ensemble pour produire un rapport.
+      run_once: true
+      delegate_to: localhost
+      become: false
+
+    - name: Afficher le rapport
+      ansible.builtin.debug:
+        msg: "Rapport ecrit dans corrige/tp06-patching/rapport-patching.json"
+      run_once: true
+      delegate_to: localhost

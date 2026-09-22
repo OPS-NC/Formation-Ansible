@@ -31,3 +31,4 @@ __pycache__/
 # Systeme
 .DS_Store
 Thumbs.db
+rapport-patching.json
