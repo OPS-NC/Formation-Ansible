@@ -1,16 +1,28 @@
 ---
+# Configuration yamllint du projet.
+# ansible-lint delegue a yamllint pour la regle `yaml` : certaines options
+# doivent imperativement etre desactivees pour ne pas entrer en conflit.
 extends: default
 
 rules:
+  # Impose par ansible-lint : l'indentation des commentaires n'est pas verifiee.
+  comments-indentation: false
+
   line-length:
     max: 160
     level: warning
+
+  # `yes`/`no`/`on`/`off` sont refuses : on ecrit true/false.
   truthy:
     allowed-values: ["true", "false"]
+
   comments:
     min-spaces-from-content: 1
+
   braces:
     max-spaces-inside: 1
+
+  # Les modes de fichiers s'ecrivent entre quotes ("0644"), jamais en octal nu.
   octal-values:
     forbid-implicit-octal: true
     forbid-explicit-octal: true
