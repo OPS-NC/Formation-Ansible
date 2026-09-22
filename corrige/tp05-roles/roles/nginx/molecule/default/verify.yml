@@ -45,18 +45,20 @@
       ansible.builtin.command: nginx -t
       changed_when: false
 
-    - name: Le site par defaut doit avoir ete supprime
-      ansible.builtin.stat:
-        path: "{{ nginx_chemins[ansible_facts['os_family']].site_defaut }}"
-      register: nginx_defaut
-
-    # Sur Debian ce controle est significatif. Sur RHEL-like, le serveur par
-    # defaut vit probablement dans nginx.conf : l'assertion passe alors sans
-    # rien prouver. Reserve assumee, a lever sur l'image Rocky.
-    - name: Absence du site par defaut
-      ansible.builtin.assert:
-        that:
-          - not nginx_defaut.stat.exists
+    # Controle de COMPORTEMENT, valable sur les deux familles.
+    #
+    # Verifier l'absence d'un fichier ne prouve rien sur RedHat, ou aucun
+    # default.conf n'est livre : l'assertion y passait sans rien tester.
+    # Sans en-tete Host, nginx sert le serveur PAR DEFAUT du port 80. Sur les
+    # deux familles, les vhosts du role sont inclus avant tout serveur livre par
+    # la distribution : c'est donc `ancien` (premier par ordre alphabetique,
+    # listen 80) qui repond, avec sa redirection 301. Un 200 servant la page
+    # d'accueil de la distribution signalerait l'inverse.
+    - name: Le serveur par defaut de la distribution ne doit plus repondre
+      ansible.builtin.uri:
+        url: http://127.0.0.1/
+        follow_redirects: none
+        status_code: [301]
 
     - name: Le site vitrine doit repondre
       ansible.builtin.uri:

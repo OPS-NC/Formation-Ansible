@@ -10,10 +10,17 @@ nginx_chemins:
   RedHat:
     disponibles: /etc/nginx/conf.d
     actives: /etc/nginx/conf.d
-    # RESERVE non tranchee faute de VM : sur RHEL-like, le serveur par defaut
-    # est generalement declare directement dans /etc/nginx/nginx.conf, et non
-    # dans conf.d/default.conf. La suppression de ce fichier est alors sans
-    # effet, et l'assertion correspondante du scenario Molecule passe
-    # trivialement. A verifier sur l'image Rocky avant de s'y fier.
-    site_defaut: /etc/nginx/conf.d/default.conf
+    # VERIFIE sur Rocky Linux 10 : apres installation du paquet nginx,
+    # /etc/nginx/conf.d est VIDE. Il n'existe aucun default.conf a supprimer.
+    # Le serveur par defaut de la distribution est declare directement dans
+    # /etc/nginx/nginx.conf :
+    #     server { listen 80; server_name _; root /usr/share/nginx/html; }
+    # `site_defaut` est donc vide et la tache de suppression est ignoree.
+    #
+    # Ce serveur reste sans effet : nginx.conf fait
+    #     include /etc/nginx/conf.d/*.conf;
+    # AVANT de le declarer, et le PREMIER serveur rencontre pour un port en
+    # devient le serveur par defaut. Les vhosts du role, inclus les premiers,
+    # l'emportent donc - exactement comme sur Debian.
+    site_defaut: ""
     utilisateur: nginx
