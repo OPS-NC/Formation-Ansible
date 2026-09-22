@@ -1,0 +1,22 @@
+---
+# Version epinglee : le canal `stable` evolue, un TP doit etre reproductible.
+k3s_version: "v1.36.4+k3s1"
+
+# Jeton partage par tous les noeuds. Genere une fois et chiffre au vault en
+# situation reelle ; le generer sur le serveur imposerait un ordre d'execution.
+k3s_token: "formation-ansible-token-a-chiffrer"
+
+k3s_api_port: 6443
+
+# Rendre le kubeconfig lisible par l'utilisateur vagrant. A PROSCRIRE en
+# production : ce fichier donne les pleins pouvoirs sur le cluster.
+k3s_kubeconfig_mode: "0644"
+
+# Composants integres a desactiver le cas echeant.
+# traefik et servicelb sont conserves : ils permettent d'exposer un Ingress
+# directement sur les adresses des noeuds.
+k3s_desactiver: []
+
+# Recuperer le kubeconfig sur le noeud de controle.
+k3s_recuperer_kubeconfig: true
+k3s_kubeconfig_local: "{{ playbook_dir }}/kubeconfig"

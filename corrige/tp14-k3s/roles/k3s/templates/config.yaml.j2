@@ -1,0 +1,27 @@
+{{ ansible_managed | ansible.builtin.comment }}
+# Configuration k3s. Les cles reprennent les options de la ligne de commande,
+# sans les tirets initiaux. Ce fichier est prefere a INSTALL_K3S_EXEC : il est
+# relisible, modifiable et idempotent.
+
+# --- Le point critique du lab ------------------------------------------
+# Sous VirtualBox, eth0 est l'interface NAT et porte 10.0.2.15 sur TOUTES les
+# machines. Sans ces trois options, les noeuds s'enregistrent avec la meme
+# adresse : le cluster semble monter, puis le reseau des pods casse sans
+# message d'erreur explicite.
+node-ip: {{ k3s_node_ip }}
+flannel-iface: {{ k3s_interface }}
+{% if 'k3s_server' in group_names %}
+advertise-address: {{ k3s_node_ip }}
+tls-san:
+  - {{ k3s_node_ip }}
+write-kubeconfig-mode: "{{ k3s_kubeconfig_mode }}"
+{% if k3s_desactiver | length > 0 %}
+disable:
+{% for composant in k3s_desactiver %}
+  - {{ composant }}
+{% endfor %}
+{% endif %}
+{% else %}
+server: https://{{ hostvars[groups['k3s_server'][0]]['ansible_host'] }}:{{ k3s_api_port }}
+{% endif %}
+token: {{ k3s_token }}

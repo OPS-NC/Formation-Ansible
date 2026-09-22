@@ -1,0 +1,8 @@
+---
+- name: Redemarrer k3s
+  ansible.builtin.systemd_service:
+    name: "{{ 'k3s' if 'k3s_server' in group_names else 'k3s-agent' }}"
+    state: restarted
+  # Au tout premier passage, le service n'existe pas encore : le handler ne
+  # doit pas faire echouer l'execution.
+  failed_when: false

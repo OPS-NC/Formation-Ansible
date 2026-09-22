@@ -1,0 +1,97 @@
+---
+# Role k3s - cluster Kubernetes leger sur un lab Vagrant/VirtualBox.
+
+# --- Identification de l'interface du lab --------------------------------
+# On ne code JAMAIS `eth1` en dur : le nom depend de la distribution et de la
+# configuration des noms previsibles. On cherche l'interface qui porte
+# reellement l'adresse du reseau host-only.
+
+- name: Definir l adresse du noeud sur le reseau du lab
+  ansible.builtin.set_fact:
+    k3s_node_ip: "{{ ansible_host }}"
+
+- name: Identifier l interface portant cette adresse
+  ansible.builtin.set_fact:
+    k3s_interface: "{{ item }}"
+  loop: "{{ ansible_facts['interfaces'] }}"
+  when:
+    - ansible_facts[item]['ipv4'] is defined
+    - ansible_facts[item]['ipv4']['address'] | default('') == k3s_node_ip
+  loop_control:
+    label: "{{ item }}"
+
+- name: Verifier que l interface a bien ete trouvee
+  ansible.builtin.assert:
+    that:
+      - k3s_interface is defined
+    fail_msg: >-
+      Aucune interface ne porte l adresse {{ k3s_node_ip }}.
+      Verifiez le reseau host-only du Vagrantfile.
+
+# `ansible_default_ipv4` designe la route par defaut, donc le NAT : la citer
+# ici serait exactement l'erreur que ce role cherche a eviter.
+- name: Afficher le choix retenu
+  ansible.builtin.debug:
+    msg: >-
+      {{ inventory_hostname }} : interface {{ k3s_interface }} ({{ k3s_node_ip }})
+      -- interface par defaut ignoree ({{ ansible_facts['default_ipv4']['address'] | default('-') }})
+
+# --- Installation --------------------------------------------------------
+
+- name: Installer les dependances
+  ansible.builtin.package:
+    name:
+      - curl
+      - iptables
+    state: present
+
+- name: Creer le repertoire de configuration
+  ansible.builtin.file:
+    path: /etc/rancher/k3s
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+
+- name: Deposer la configuration du noeud
+  ansible.builtin.template:
+    src: config.yaml.j2
+    dest: /etc/rancher/k3s/config.yaml
+    owner: root
+    group: root
+    mode: "0600"
+  notify: Redemarrer k3s
+
+- name: Telecharger le script d installation
+  ansible.builtin.get_url:
+    url: https://get.k3s.io
+    dest: /usr/local/bin/k3s-install.sh
+    mode: "0755"
+
+# `creates` rend l'installation idempotente sans avoir a interpreter la sortie
+# du script. Les options de fonctionnement viennent de config.yaml, pas de
+# INSTALL_K3S_EXEC : seul le role (server ou agent) est passe ici.
+- name: Installer k3s
+  ansible.builtin.command:
+    cmd: /usr/local/bin/k3s-install.sh
+    creates: /usr/local/bin/k3s
+  environment:
+    INSTALL_K3S_VERSION: "{{ k3s_version }}"
+    INSTALL_K3S_EXEC: "{{ 'server' if 'k3s_server' in group_names else 'agent' }}"
+    K3S_TOKEN: "{{ k3s_token }}"
+  register: k3s_installation
+
+- name: Activer et demarrer le service
+  ansible.builtin.systemd_service:
+    name: "{{ 'k3s' if 'k3s_server' in group_names else 'k3s-agent' }}"
+    state: started
+    enabled: true
+    daemon_reload: true
+
+- name: Attendre que l API reponde
+  ansible.builtin.wait_for:
+    host: "{{ hostvars[groups['k3s_server'][0]]['ansible_host'] }}"
+    port: "{{ k3s_api_port }}"
+    timeout: 300
+    delay: 5
+  when: not ansible_check_mode

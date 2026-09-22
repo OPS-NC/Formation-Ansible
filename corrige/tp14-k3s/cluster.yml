@@ -1,0 +1,45 @@
+---
+# TP 14 - Montage du cluster k3s.
+#
+# L'ordre compte : le plan de controle doit repondre avant que les agents ne
+# tentent de le rejoindre. Deux plays successifs suffisent a l'imposer.
+
+- name: Plan de controle
+  hosts: k3s_server
+  become: true
+  roles:
+    - role: k3s
+
+- name: Noeuds de calcul
+  hosts: k3s_agent
+  become: true
+  roles:
+    - role: k3s
+
+- name: Recuperer le kubeconfig sur le noeud de controle
+  hosts: k3s_server
+  become: true
+  gather_facts: false
+
+  tasks:
+    - name: Lire le kubeconfig
+      ansible.builtin.slurp:
+        src: /etc/rancher/k3s/k3s.yaml
+      register: k3s_kubeconfig_distant
+
+    # Le kubeconfig genere pointe vers 127.0.0.1 : utilisable sur le serveur,
+    # inutilisable depuis le poste. On substitue l'adresse du lab.
+    - name: Ecrire le kubeconfig localement
+      ansible.builtin.copy:
+        content: >-
+          {{ k3s_kubeconfig_distant.content | b64decode
+             | replace('127.0.0.1', ansible_host)
+             | replace('default', 'formation') }}
+        dest: "{{ playbook_dir }}/kubeconfig"
+        mode: "0600"
+      delegate_to: localhost
+      become: false
+
+    - name: Rappeler comment utiliser le cluster
+      ansible.builtin.debug:
+        msg: "export KUBECONFIG={{ playbook_dir }}/kubeconfig && kubectl get nodes -o wide"

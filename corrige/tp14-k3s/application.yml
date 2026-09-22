@@ -1,0 +1,119 @@
+---
+# TP 14 - Deploiement applicatif sur le cluster, depuis le noeud de controle.
+#
+# Les modules kubernetes.core s'executent sur le CONTROLEUR et parlent a l'API
+# Kubernetes : le play cible localhost, pas les noeuds du cluster.
+
+- name: Deployer une application sur k3s
+  hosts: localhost
+  gather_facts: false
+  connection: local
+
+  vars:
+    kubeconfig: "{{ playbook_dir }}/kubeconfig"
+    app_namespace: formation
+    app_nom: vitrine
+    app_image: docker.io/library/nginx:1.29-alpine
+    app_replicas: 3
+    app_domaine: lab.local
+
+  tasks:
+
+    - name: Verifier la presence du kubeconfig
+      ansible.builtin.stat:
+        path: "{{ kubeconfig }}"
+      register: fichier_kubeconfig
+
+    - name: Le cluster doit avoir ete monte au prealable
+      ansible.builtin.assert:
+        that:
+          - fichier_kubeconfig.stat.exists
+        fail_msg: "Lancez d abord cluster.yml : {{ kubeconfig }} est absent."
+
+    - name: Lister les noeuds du cluster
+      kubernetes.core.k8s_info:
+        kubeconfig: "{{ kubeconfig }}"
+        kind: Node
+      register: noeuds
+
+    - name: Afficher les noeuds et leur adresse interne
+      ansible.builtin.debug:
+        msg: >-
+          {{ item.metadata.name }} :
+          {{ item.status.addresses | selectattr('type', 'eq', 'InternalIP')
+             | map(attribute='address') | first }}
+      loop: "{{ noeuds.resources }}"
+      loop_control:
+        label: "{{ item.metadata.name }}"
+
+    # Verification du piege VirtualBox : si les trois noeuds affichent la meme
+    # adresse, `node-ip` n'a pas ete applique et le reseau des pods est casse.
+    - name: Les noeuds doivent avoir des adresses internes distinctes
+      ansible.builtin.assert:
+        that:
+          - adresses | unique | length == adresses | length
+        fail_msg: >-
+          Plusieurs noeuds partagent la meme adresse interne ({{ adresses | join(', ') }}).
+          L option node-ip n a pas ete prise en compte.
+      vars:
+        adresses: >-
+          {{ noeuds.resources
+             | map(attribute='status.addresses') | flatten
+             | selectattr('type', 'eq', 'InternalIP')
+             | map(attribute='address') | list }}
+
+    - name: Creer le namespace
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig }}"
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: "{{ app_namespace }}"
+
+    # `template:` rend le gabarit Jinja2 SUR LE CONTROLEUR avant de l'envoyer
+    # a l'API. Les manifestes deviennent parametrables comme n'importe quel
+    # fichier de configuration.
+    - name: Deployer l application
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig }}"
+        state: present
+        apply: true
+        template: templates/application.yaml.j2
+        wait: true
+        wait_condition:
+          type: Available
+          status: "True"
+        wait_timeout: 180
+
+    - name: Verifier que les replicas sont prets
+      kubernetes.core.k8s_info:
+        kubeconfig: "{{ kubeconfig }}"
+        kind: Deployment
+        name: "{{ app_nom }}"
+        namespace: "{{ app_namespace }}"
+      register: deploiement
+
+    - name: Le nombre de replicas disponibles doit correspondre
+      ansible.builtin.assert:
+        that:
+          - deploiement.resources[0].status.availableReplicas == app_replicas
+
+    - name: Ajouter le depot Helm de Bitnami
+      kubernetes.core.helm_repository:
+        name: bitnami
+        repo_url: https://charts.bitnami.com/bitnami
+
+    - name: Installer un chart Helm
+      kubernetes.core.helm:
+        kubeconfig: "{{ kubeconfig }}"
+        name: metrics
+        chart_ref: bitnami/metrics-server
+        release_namespace: kube-system
+        wait: true
+        values:
+          apiService:
+            create: true
+          extraArgs:
+            - --kubelet-insecure-tls

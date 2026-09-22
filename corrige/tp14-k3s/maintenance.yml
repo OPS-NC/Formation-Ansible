@@ -1,0 +1,45 @@
+---
+# TP 14 - Operations de jour 2 : c'est ici qu'Ansible reste irremplacable.
+
+- name: Maintenance d un noeud du cluster
+  hosts: localhost
+  gather_facts: false
+  connection: local
+
+  vars:
+    kubeconfig: "{{ playbook_dir }}/kubeconfig"
+    noeud_cible: k3s-node01
+
+  tasks:
+
+    - name: Vider le noeud de ses pods
+      kubernetes.core.k8s_drain:
+        kubeconfig: "{{ kubeconfig }}"
+        name: "{{ noeud_cible }}"
+        state: drain
+        delete_options:
+          ignore_daemonsets: true
+          delete_emptydir_data: true
+          wait_timeout: 120
+
+    - name: Verifier que le noeud est bien isole
+      kubernetes.core.k8s_info:
+        kubeconfig: "{{ kubeconfig }}"
+        kind: Node
+        name: "{{ noeud_cible }}"
+      register: etat_noeud
+
+    - name: Le noeud doit etre marque non ordonnancable
+      ansible.builtin.assert:
+        that:
+          - etat_noeud.resources[0].spec.unschedulable | default(false)
+
+    # C'est ici que l'on ferait le vrai travail : mise a jour du noyau,
+    # redemarrage, changement de configuration systeme. Autant d'operations
+    # qui sortent du perimetre de Kubernetes.
+
+    - name: Remettre le noeud en service
+      kubernetes.core.k8s_drain:
+        kubeconfig: "{{ kubeconfig }}"
+        name: "{{ noeud_cible }}"
+        state: uncordon
