@@ -14,7 +14,16 @@ version: 3
 images:
   base_image:
     # Image de base communautaire : une distribution minimale, sans ansible.
-    name: ghcr.io/ansible/community-ee-base:latest
+    #
+    # ATTENTION a l'organisation : c'est `ansible-community`, et non `ansible`.
+    # ghcr.io/ansible/community-ee-base n'est pas accessible publiquement et la
+    # construction echoue des la premiere etape :
+    #   Error: creating build container: unable to copy from source
+    #   docker://ghcr.io/ansible/community-ee-base:latest: Requesting bearer
+    #   token: received unexpected HTTP status: 403 Forbidden
+    # Les images quay.io/ansible/community-ee-{base,minimal} ne sont pas
+    # accessibles non plus (unauthorized).
+    name: ghcr.io/ansible-community/community-ee-base:latest
 
 dependencies:
   # On part d'ansible-core SEUL, pas du paquet communautaire : les collections

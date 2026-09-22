@@ -32,7 +32,9 @@ __pycache__/
 .DS_Store
 Thumbs.db
 rapport-patching.json
-facts_cache/
+
+# Contexte de construction genere par `ansible-builder build` (TP 09).
+context/
 
 # Kubeconfig genere par le TP 14 : donne un acces administrateur au cluster.
 corrige/tp14-k3s/kubeconfig
