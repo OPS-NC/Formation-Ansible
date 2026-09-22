@@ -1,0 +1,38 @@
+---
+# Etape 3 - Analyser une sortie d'equipement SANS aucun equipement.
+#
+# Contrairement aux resource modules, `cli_parse` accepte un texte fourni en
+# entree : quand l'option `text` est utilisee, aucune connexion n'est ouverte.
+# C'est la seule facon de travailler reellement hors ligne.
+
+- name: Analyse hors ligne d une sortie de CLI
+  hosts: localhost
+  gather_facts: false
+  connection: local
+
+  tasks:
+
+    - name: Transformer un "show ip interface brief" en donnees
+      ansible.utils.cli_parse:
+        text: "{{ lookup('ansible.builtin.file', playbook_dir + '/../fixtures/show-ip-interface-brief.txt') }}"
+        parser:
+          name: ansible.netcommon.ntc_templates
+          command: show ip interface brief
+          os: cisco_ios
+      register: analyse
+
+    - name: Afficher le modele de donnees obtenu
+      ansible.builtin.debug:
+        var: analyse.parsed
+
+    - name: Isoler les interfaces reellement actives
+      ansible.builtin.set_fact:
+        interfaces_actives: >-
+          {{ analyse.parsed
+             | selectattr('status', 'eq', 'up')
+             | map(attribute='interface')
+             | list }}
+
+    - name: Resultat de l analyse
+      ansible.builtin.debug:
+        msg: "{{ interfaces_actives | length }} interfaces actives : {{ interfaces_actives | join(', ') }}"

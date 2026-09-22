@@ -1,0 +1,43 @@
+---
+# Etape 1 - Lire l'equipement sans rien modifier.
+
+- name: Decouverte de l equipement
+  hosts: reseau
+  gather_facts: false
+
+  tasks:
+
+    - name: Collecter les facts reseau
+      vyos.vyos.vyos_facts:
+        gather_subset: all
+        gather_network_resources:
+          - interfaces
+          - l3_interfaces
+          - firewall_rules
+
+    - name: Afficher l identite de l equipement
+      ansible.builtin.debug:
+        msg: >-
+          {{ ansible_net_hostname }}
+          modele={{ ansible_net_model | default('-') }}
+          version={{ ansible_net_version }}
+
+    - name: Afficher les interfaces decouvertes
+      ansible.builtin.debug:
+        var: ansible_network_resources.interfaces
+
+    # `gathered` produit le MODELE DE DONNEES de la configuration existante.
+    # C'est le point de depart de toute migration vers Ansible : on lit
+    # l'existant, on le versionne, puis on le pilote.
+    - name: Recuperer la configuration des interfaces sous forme de donnees
+      vyos.vyos.vyos_interfaces:
+        state: gathered
+      register: interfaces_actuelles
+
+    - name: Sauvegarder l existant sur le noeud de controle
+      ansible.builtin.copy:
+        content: "{{ interfaces_actuelles.gathered | to_nice_yaml }}"
+        dest: "{{ playbook_dir }}/../fixtures/interfaces-existantes.yml"
+        mode: "0644"
+      delegate_to: localhost
+      become: false

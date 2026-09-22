@@ -1,0 +1,21 @@
+---
+# Inventaire des equipements reseau.
+#
+# Une machine reseau ne se declare pas comme un serveur : elle n'a pas de
+# Python, les modules s'executent sur le noeud de controle et dialoguent par
+# CLI, NETCONF ou API.
+all:
+  children:
+    reseau:
+      hosts:
+        net01:
+          ansible_host: 192.168.56.51
+      vars:
+        # `network_cli` : SSH, puis pilotage de la CLI de l'equipement.
+        ansible_connection: ansible.netcommon.network_cli
+        # Selectionne les greffons cliconf et terminal du constructeur.
+        ansible_network_os: vyos.vyos.vyos
+        ansible_user: vagrant
+        ansible_password: vagrant
+        # Les equipements reseau n'ont pas de sudo : pas de become.
+        ansible_become: false

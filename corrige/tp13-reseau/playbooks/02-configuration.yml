@@ -1,0 +1,57 @@
+---
+# Etape 2 - Configurer, en maitrisant l'etat applique.
+
+- name: Configuration du routeur
+  hosts: reseau
+  gather_facts: false
+
+  vars:
+    # La configuration cible est une DONNEE, versionnee dans Git.
+    interfaces_cibles:
+      - name: eth1
+        description: Reseau de lab
+        enabled: true
+      - name: eth2
+        description: Reseau applicatif
+        enabled: true
+
+    adresses_cibles:
+      - name: eth1
+        ipv4:
+          - address: 192.168.56.51/24
+      - name: eth2
+        ipv4:
+          - address: 10.10.20.1/24
+
+  tasks:
+
+    # Sauvegarde AVANT toute modification : reflexe non negociable.
+    - name: Sauvegarder la configuration courante
+      vyos.vyos.vyos_config:
+        backup: true
+        backup_options:
+          dir_path: "{{ playbook_dir }}/../fixtures/sauvegardes"
+          filename: "net01-{{ '%Y%m%d-%H%M%S' | strftime }}.cfg"
+
+    # `merged` : ajoute et modifie, ne supprime rien. L'etat le plus sur.
+    - name: Appliquer la description des interfaces
+      vyos.vyos.vyos_interfaces:
+        config: "{{ interfaces_cibles }}"
+        state: merged
+
+    # `replaced` : remplace la configuration DES INTERFACES CITEES seulement.
+    - name: Appliquer les adresses IP
+      vyos.vyos.vyos_l3_interfaces:
+        config: "{{ adresses_cibles }}"
+        state: replaced
+
+    - name: Verifier l idempotence en relisant l etat
+      vyos.vyos.vyos_l3_interfaces:
+        state: gathered
+      register: verification
+
+    - name: Les adresses appliquees sont bien presentes
+      ansible.builtin.assert:
+        that:
+          - verification.gathered | selectattr('name', 'eq', 'eth1') | list | length == 1
+        fail_msg: eth1 est absente de la configuration relue

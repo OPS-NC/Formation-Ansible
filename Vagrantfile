@@ -26,6 +26,8 @@ BOX_DEBIAN         = "bento/debian-13"
 BOX_DEBIAN_VERSION = "202510.26.0"      # Debian 13.1, Python 3.13
 BOX_ROCKY          = "bento/rockylinux-10"
 BOX_ROCKY_VERSION  = "202512.01.0"      # Rocky 10.1, Python 3.12, EFI
+BOX_VYOS           = "vyos/current"
+BOX_VYOS_VERSION   = "20240817.00.20"   # figee depuis aout 2024, suffisante pour le TP
 
 servers = [
   # --- Lab jours 1 et 2 -----------------------------------------------------
@@ -91,6 +93,23 @@ servers = [
     :cpu       => 2,
     :autostart => false
   },
+  # --- Lab jour 3 : equipement reseau ---------------------------------------
+  # VyOS est un routeur logiciel pilotable par la collection vyos.vyos et la
+  # connexion network_cli. C'est la seule pile reseau libre qui fonctionne sous
+  # VirtualBox sans Docker, sans compte et sans licence.
+  #
+  # `bootstrap` est desactive : VyOS n'est pas un Debian ordinaire, sa
+  # configuration passe par son propre systeme, pas par apt.
+  {
+    :hostname  => "net01",
+    :ip        => "192.168.56.51",
+    :box       => BOX_VYOS,
+    :version   => BOX_VYOS_VERSION,
+    :ram       => 1024,
+    :cpu       => 1,
+    :autostart => false,
+    :bootstrap => false
+  },
 # Troisieme worker — decommenter sur un poste disposant de 32 Go de RAM.
 #  {
 #    :hostname  => "k3s-node03",
@@ -137,10 +156,13 @@ Vagrant.configure("2") do |config|
 
       # Socle minimal : uniquement l'interpreteur Python attendu par Ansible.
       # Le script est televerse par SSH (pas de dependance au dossier partage).
-      node.vm.provision "shell",
-        name:       "socle",
-        path:       "bootstrap.sh",
-        privileged: true
+      # Les equipements reseau en sont exemptes.
+      if machine.fetch(:bootstrap, true)
+        node.vm.provision "shell",
+          name:       "socle",
+          path:       "bootstrap.sh",
+          privileged: true
+      end
     end
   end
 end
