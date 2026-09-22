@@ -1,0 +1,33 @@
+# Vagrant
+.vagrant/
+*.box
+ssh-config
+
+# Ansible
+*.retry
+.vault_pass
+.vault_pass_*
+vault_pass*.txt
+collections/ansible_collections/
+roles/galaxy/
+*.log
+facts_cache/
+.ansible/
+
+# Secrets
+*.key
+*.pem
+!corrige/**/*.pub
+.sops.env
+age.key
+
+# Python / outils
+.venv/
+__pycache__/
+.molecule/
+.pytest_cache/
+.tox/
+
+# Systeme
+.DS_Store
+Thumbs.db

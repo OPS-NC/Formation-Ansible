@@ -1,0 +1,12 @@
+---
+# Profil de reference de la formation.
+# Le profil "production" est la cible finale (module 09).
+# Les modules 01 a 08 tolerent le profil "moderate".
+profile: moderate
+
+exclude_paths:
+  - .vagrant/
+  - .github/
+  - collections/
+
+# yamllint est appele par ansible-lint via la regle "yaml".
