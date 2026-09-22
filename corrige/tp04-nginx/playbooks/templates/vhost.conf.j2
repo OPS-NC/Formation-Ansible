@@ -1,0 +1,31 @@
+{{ ansible_managed | ansible.builtin.comment }}
+# Site : {{ site.nom }}
+# Genere pour {{ inventory_hostname }} ({{ parc_environnement }})
+
+server {
+    listen {{ site.port | default(http_port) }};
+    server_name {{ site.nom }}.{{ parc_domaine }}{% if site.alias is defined %} {{ site.alias | join(' ') }}{% endif %};
+
+    root {{ site_racine }}/{{ site.nom }};
+    index index.html;
+
+    access_log /var/log/nginx/{{ site.nom }}-access.log;
+    error_log  /var/log/nginx/{{ site.nom }}-error.log {{ site.log_level | default('warn') }};
+
+{% if site.https_redirect | default(false) %}
+    # Redirection permanente vers HTTPS
+    return 301 https://$host$request_uri;
+{% else %}
+    location / {
+        try_files $uri $uri/ =404;
+    }
+
+{% for chemin, cible in (site.proxies | default({})).items() %}
+    location {{ chemin }} {
+        proxy_pass {{ cible }};
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+{% endfor %}
+{% endif %}
+}

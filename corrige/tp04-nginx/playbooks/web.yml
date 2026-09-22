@@ -1,0 +1,134 @@
+---
+# TP 04 - Deploiement de serveurs web nginx pilotes par les donnees.
+#
+# Le play ne cible que le groupe `web`, compose de machines Debian 13.
+# Les chemins nginx utilises (sites-available / sites-enabled) sont propres
+# a l'empaquetage Debian.
+
+- name: Deploiement des serveurs web
+  hosts: web
+  become: true
+
+  vars:
+    # La liste des sites est une DONNEE. Ajouter un site ne demande aucune
+    # modification du code : ni tache, ni condition supplementaire.
+    sites:
+      - nom: vitrine
+        titre: Site vitrine de la formation
+
+      - nom: api
+        port: 8080
+        alias:
+          - api-v1
+          - api-legacy
+        log_level: info
+        proxies:
+          /v1/: http://127.0.0.1:9001
+          /v2/: http://127.0.0.1:9002
+
+      - nom: ancien
+        https_redirect: true
+
+  handlers:
+    # Les handlers s'executent A LA FIN DU PLAY, une seule fois quel que soit
+    # le nombre de notifications, et DANS L'ORDRE OU ILS SONT DEFINIS ICI -
+    # pas dans l'ordre des notifications. Le controle precede donc le
+    # rechargement, ce qui est exactement l'effet recherche.
+    - name: Controler la configuration nginx
+      listen: configuration nginx modifiee
+      ansible.builtin.command: nginx -t
+      changed_when: false
+
+    - name: Recharger nginx
+      listen: configuration nginx modifiee
+      ansible.builtin.systemd_service:
+        name: nginx
+        state: reloaded
+
+  tasks:
+
+    - name: Installer nginx
+      ansible.builtin.package:
+        name: nginx
+        state: present
+
+    - name: Activer nginx au demarrage
+      ansible.builtin.systemd_service:
+        name: nginx
+        state: started
+        enabled: true
+
+    - name: Creer la racine documentaire de chaque site
+      ansible.builtin.file:
+        path: "{{ site_racine }}/{{ item.nom }}"
+        state: directory
+        owner: root
+        group: "{{ utilisateur_web }}"
+        mode: "0755"
+      loop: "{{ sites }}"
+      loop_control:
+        # Sans `label`, la sortie affiche le dictionnaire complet a chaque
+        # iteration et devient illisible.
+        label: "{{ item.nom }}"
+
+    - name: Deposer la page d accueil de chaque site
+      ansible.builtin.template:
+        src: index.html.j2
+        dest: "{{ site_racine }}/{{ item.nom }}/index.html"
+        owner: root
+        group: "{{ utilisateur_web }}"
+        mode: "0644"
+      loop: "{{ sites }}"
+      loop_control:
+        loop_var: site
+        label: "{{ site.nom }}"
+      # Une page statique ne justifie pas de recharger nginx : pas de notify.
+
+    - name: Generer la configuration de chaque vhost
+      ansible.builtin.template:
+        src: vhost.conf.j2
+        dest: "/etc/nginx/sites-available/{{ site.nom }}.conf"
+        owner: root
+        group: root
+        mode: "0644"
+      loop: "{{ sites }}"
+      loop_control:
+        loop_var: site
+        label: "{{ site.nom }}"
+      notify: configuration nginx modifiee
+
+    - name: Activer chaque vhost
+      ansible.builtin.file:
+        src: "/etc/nginx/sites-available/{{ site.nom }}.conf"
+        dest: "/etc/nginx/sites-enabled/{{ site.nom }}.conf"
+        state: link
+        owner: root
+        group: root
+      loop: "{{ sites }}"
+      loop_control:
+        loop_var: site
+        label: "{{ site.nom }}"
+      notify: configuration nginx modifiee
+
+    - name: Desactiver le site par defaut de Debian
+      ansible.builtin.file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+      notify: configuration nginx modifiee
+
+    # Les handlers ne s'executent normalement qu'a la fin du play. Sans cette
+    # tache, la verification ci-dessous interrogerait un nginx servant encore
+    # l'ancienne configuration. `flush_handlers` les declenche immediatement.
+    - name: Declencher les handlers en attente
+      ansible.builtin.meta: flush_handlers
+
+    - name: Verifier que chaque site repond
+      ansible.builtin.uri:
+        url: "http://127.0.0.1:{{ site.port | default(http_port) }}/"
+        status_code: [200, 301]
+      loop: "{{ sites }}"
+      loop_control:
+        loop_var: site
+        label: "{{ site.nom }}"
+      # En mode simulation nginx n'a rien recharge : le test n'aurait pas de sens.
+      when: not ansible_check_mode

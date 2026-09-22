@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>{{ site.nom }} — {{ inventory_hostname }}</title>
+</head>
+<body>
+  <h1>{{ site.titre | default(site.nom | title) }}</h1>
+  <p>{{ banniere }}</p>
+  <table>
+    <tr><th>Machine</th><td>{{ inventory_hostname }}</td></tr>
+    <tr><th>Adresse</th><td>{{ ansible_host }}</td></tr>
+    <tr><th>Systeme</th><td>{{ ansible_facts['distribution'] }} {{ ansible_facts['distribution_version'] }}</td></tr>
+    <tr><th>Environnement</th><td>{{ parc_environnement }}</td></tr>
+    <tr><th>Groupes</th><td>{{ group_names | sort | join(', ') }}</td></tr>
+    <tr><th>Genere le</th><td>{{ ansible_date_time.iso8601 }}</td></tr>
+  </table>
+</body>
+</html>
