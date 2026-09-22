@@ -1,7 +1,8 @@
 # Rapport de validation du lab
 
-Validation en conditions réelles du 22 septembre 2026, sur le poste Ubuntu 26.04 de référence.
-**Les 14 TP ont été exécutés**, sur de vraies machines virtuelles, jusqu'au test d'idempotence.
+Validation en conditions réelles des 22 et 23 septembre 2026, sur le poste Ubuntu 26.04 de
+référence. **Les 14 TP ont été exécutés**, sur de vraies machines virtuelles, jusqu'au test
+d'idempotence — puis **rejoués intégralement à froid** : lab détruit, dépôt recloné (§2.1).
 
 Deux passes : les **corrigés** (§3), puis les **étapes d'énoncé sans playbook** (§3.3) — celles
 que le formateur joue en direct, et qui avaient échappé à la première passe.
@@ -73,6 +74,51 @@ dont environ 1 min de téléchargement de la box Rocky.
 | 13 | Automatisation VyOS | oui | routeur réel, 3 playbooks au vert | 48 s + 1 min |
 | 14 | Cluster k3s | oui | 3 nœuds `Ready`, application déployée, idempotent | 1 min 09 s |
 
+### 2.1 Passe à froid — la validation qui compte
+
+Les mesures ci-dessus ont été prises au fil des corrections, sur des machines qui accumulaient
+de l'état. Pour lever cette réserve, **tout a été rejoué depuis rien** le 23 septembre :
+`vagrant destroy -f` sur les huit VM, puis `git clone` du dépôt dans un répertoire neuf, et les
+14 TP enchaînés dans l'ordre.
+
+**Résultat : aucun échec.** `rc=0` sur chacune des 26 étapes.
+
+| Phase | Durée | Résultat |
+|---|---|---|
+| `vagrant up` (4 VM J1/J2) | 4 min | 4 machines `running` |
+| TP 01 → TP 12 enchaînés | **8 min 17 s** | 26 étapes, toutes `rc=0` |
+| `molecule test` (TP 08) | 1 min 33 s | 7 actions, 0 échec |
+| `ansible-lint` + `pre-commit` | — | 90 fichiers, 0 violation ; 6 hooks verts |
+| Construction de l'EE (TP 09) | — | image produite, 13 collections |
+| `vagrant up net01` + TP 13 | 48 s + 1 min | 3 playbooks `rc=0` |
+| `vagrant up` cluster k3s | 3 min 18 s | 3 machines `running` |
+| TP 14 complet | 1 min 15 s | 3 nœuds `Ready`, IP internes distinctes, idempotent |
+
+**Environ 28 minutes de temps machine** pour le parcours complet, lab détruit au départ.
+
+Deux points valident spécifiquement les corrections les plus lourdes :
+
+- **TP 03 et TP 04** : la 1ʳᵉ convergence passe, le 2ᵉ passage donne `changed=0`, et
+  `--check --diff` en **position d'audit** donne `changed=0` lui aussi. Le réordonnancement
+  des README (§3.2) est donc le bon.
+- **TP 06** : sur un parc entièrement neuf, le rapport rend
+  `{"db01": true, "web01": true, "web02": true}`. Les **deux** mécanismes de détection se
+  déclenchent, y compris côté Debian — où il ne se déclenchait jamais avant correction.
+
+### Deux observations relevées pendant la passe à froid
+
+**Les VM Debian partagent leur clé d'hôte SSH.** `web01`, `web02` et `tools` présentent la même
+clé ed25519 : elle est figée dans l'image `bento/debian-13`. Conséquence agréable — détruire et
+recréer une VM ne déclenche **aucun** conflit de clé, contrairement à ce qu'on pourrait craindre
+après un `vagrant destroy -f`. Conséquence à connaître : le `accept-new` vanté au module 02 ne
+distingue pas ces trois machines, puisqu'elles ont la même identité. C'est sans gravité en lab,
+mais cela mérite d'être dit si un stagiaire pose la question. VyOS, lui, régénère sa clé à
+chaque création : d'où l'obligation du `ssh-keyscan` au TP 13.
+
+**`vagrant up` peut rendre la main avant que le réseau host-only ne réponde.** Un `ping` lancé
+immédiatement après a échoué, puis réussi quelques secondes plus tard. Si une commande Ansible
+échoue en `UNREACHABLE` juste après un démarrage, la relancer suffit.
+
 ### Contrôles transverses
 
 | Contrôle | Résultat |
@@ -87,7 +133,7 @@ dont environ 1 min de téléchargement de la box Rocky.
 
 ## 3. Bugs rencontrés et corrigés
 
-**32 commits**, un par correction. Tous vérifiés avant commit : `ansible-lint` au profil
+**30 commits**, un par correction. Tous vérifiés avant commit : `ansible-lint` au profil
 production, `--syntax-check`, puis exécution réelle.
 
 ### Bloquants — le TP ne pouvait pas aboutir
@@ -225,7 +271,7 @@ local alors qu'on parle à l'équipement, et on en tire la conclusion inverse.
 
 | Sujet | TP | Raison |
 |---|---|---|
-| Provisioning Proxmox et vSphere réel | 12 | aucune infrastructure disponible |
+| Provisioning Proxmox et vSphere réel | 12 | aucun hyperviseur — **assumé** : le module est désormais annoncé comme théorique (voir §6) |
 | Molecule dans un exécuteur de CI | 09 | aucun exécuteur GitLab ni GitHub self-hosted |
 | Molecule en exécuteur de CI conteneurisé | 09 | conteneurs imbriqués, aucun exécuteur disponible |
 | Usage de l'interface Semaphore | 11 | création de projet, clés, tâches, webhook : manipulation en salle |
@@ -297,6 +343,15 @@ construit et se charge sur 7.0.0-31, et c'est avec lui que ce lab complet a tour
 
 ## 6. Recommandations avant de donner la formation
 
+### Décision prise : Proxmox et VMware restent théoriques
+
+Aucun hyperviseur ne sera fourni. Le support l'annonçait mal — il promettait une « démonstration
+formateur sur un Proxmox réel » et PLAN.md prévoyait « un accès lecture à un Proxmox VE 9.x de
+démo ». Ces promesses sont supprimées : le module 13, le TP 12 et le corrigé indiquent désormais
+explicitement que la partie est théorique, que le code n'a jamais tourné contre un hyperviseur,
+et ce qui a malgré tout été vérifié. Un formateur préparant la session ne cherchera plus à
+fournir un accès qui n'existe pas.
+
 ### À faire avant la session
 
 1. **Miroiter les trois boxes** (`bento/debian-13`, `bento/rockylinux-10`, `vyos/current`) et
@@ -307,7 +362,10 @@ construit et se charge sur 7.0.0-31, et c'est avec lui que ce lab complet a tour
    rafraîchisse le cache. La combinaison box épinglée + point release Debian fait disparaître
    des `.deb` du miroir : c'est la cause de **trois** des bugs bloquants rencontrés.
 3. **Dérouler le lab une fois de bout en bout, sur le poste de la salle**, une semaine avant.
-   Compter environ 25 minutes d'exécution machine pour les 14 TP, hors téléchargements.
+   Compter **28 minutes** d'exécution machine pour les 14 TP, hors téléchargements — mesuré lors
+   de la passe à froid (§2.1). Cette passe a été faite ici et ne révèle plus aucun échec ; la
+   refaire sur la machine de la salle reste utile, car elle éprouve le réseau et le compte de
+   cette machine-là, pas les miens.
 4. **Télécharger les images de conteneurs à l'avance** :
    `geerlingguy/docker-debian13-ansible`, `geerlingguy/docker-rockylinux10-ansible`,
    `ghcr.io/ansible-community/community-ee-base`, `nginx:1.29-alpine`, le chart `podinfo`.
