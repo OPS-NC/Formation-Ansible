@@ -60,21 +60,24 @@
 
     - name: Creer la racine documentaire de chaque site
       ansible.builtin.file:
-        path: "{{ site_racine }}/{{ item.nom }}"
+        path: "{{ site_racine }}/{{ site.nom }}"
         state: directory
         owner: root
         group: "{{ utilisateur_web }}"
         mode: "0755"
       loop: "{{ sites }}"
       loop_control:
+        # `loop_var` remplace `item` : TOUTES les references de la tache
+        # doivent alors utiliser ce nom, sans quoi `item` est indefini.
+        loop_var: site
         # Sans `label`, la sortie affiche le dictionnaire complet a chaque
         # iteration et devient illisible.
-        label: "{{ item.nom }}"
+        label: "{{ site.nom }}"
 
     - name: Deposer la page d accueil de chaque site
       ansible.builtin.template:
         src: index.html.j2
-        dest: "{{ site_racine }}/{{ item.nom }}/index.html"
+        dest: "{{ site_racine }}/{{ site.nom }}/index.html"
         owner: root
         group: "{{ utilisateur_web }}"
         mode: "0644"
@@ -125,7 +128,17 @@
     - name: Verifier que chaque site repond
       ansible.builtin.uri:
         url: "http://127.0.0.1:{{ site.port | default(http_port) }}/"
-        status_code: [200, 301]
+        # Sans en-tete Host, nginx sert le serveur PAR DEFAUT du port, qui
+        # n'est pas forcement le vhost teste : sur Debian, les fichiers de
+        # sites-enabled sont inclus par ordre alphabetique, donc `ancien`
+        # repond avant `vitrine` et renvoie une redirection.
+        headers:
+          Host: "{{ site.nom }}.{{ parc_domaine }}"
+        # `uri` suit les redirections par defaut. Le site `ancien` renvoie
+        # 301 vers HTTPS, qui n'est pas servi : la suivre ferait echouer le
+        # controle. On verifie donc le code retourne, sans le suivre.
+        follow_redirects: none
+        status_code: "{{ [301] if site.https_redirect | default(false) else [200] }}"
       loop: "{{ sites }}"
       loop_control:
         loop_var: site

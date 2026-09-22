@@ -26,7 +26,11 @@
     - name: Operation de mise a jour
       block:
 
-        - name: Sortir la machine de la rotation
+        # ATTENTION : ce fichier est un TEMOIN pedagogique. Aucun vhost nginx
+        # ni repartiteur de charge de la formation ne le consulte : le trafic
+        # continue d'arriver. En production, cet etat doit etre relie a la
+        # sonde de sante du repartiteur pour sortir reellement la machine.
+        - name: Sortir la machine de la rotation (temoin)
           ansible.builtin.copy:
             content: "Maintenance en cours depuis {{ ansible_date_time.iso8601 }}\n"
             dest: "{{ maj_fichier_maintenance }}"
@@ -45,11 +49,22 @@
         # l'autre : fichier temoin sur Debian, code retour d'une commande sur
         # RHEL. Ce n'est pas une simple difference de VALEUR, donc les variables
         # de groupe ne suffisent pas a elles seules : on normalise le resultat.
+        # Le fournisseur de la commande doit exister, sinon son absence
+        # produirait un code retour interprete a tort comme une decision.
+        - name: Installer le fournisseur de la commande de detection
+          ansible.builtin.package:
+            name: "{{ maj_paquet_detection }}"
+            state: present
+          when: maj_paquet_detection | length > 0
+
         - name: Determiner si un redemarrage est necessaire
           ansible.builtin.command: "{{ maj_commande_reboot }}"
           register: maj_test_reboot
           changed_when: false
-          failed_when: false
+          # On ne tolere QUE les codes retour documentes. Tout autre code est
+          # une anomalie reelle et doit interrompre, pas etre transforme en
+          # decision metier par `failed_when: false`.
+          failed_when: maj_test_reboot.rc not in maj_rc_attendus
 
         - name: Normaliser le resultat du test
           ansible.builtin.set_fact:

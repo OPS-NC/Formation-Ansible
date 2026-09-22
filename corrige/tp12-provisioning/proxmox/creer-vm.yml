@@ -93,6 +93,10 @@
           ipconfig0: "ip={{ item.ip }},gw={{ proxmox_passerelle }}"
         nameservers: "{{ proxmox_dns }}"
         searchdomains: lab.local
+        # Les tags sont REELLEMENT poses ici. Sans cette ligne, les groupes
+        # construits par l'inventaire dynamique dependraient des tags herites
+        # du gabarit, et non des donnees de ce playbook.
+        tags: "{{ item.tags }}"
         update: true
         state: present
       loop: "{{ machines }}"

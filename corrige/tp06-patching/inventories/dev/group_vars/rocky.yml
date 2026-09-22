@@ -3,3 +3,7 @@
 # `dnf needs-restarting -r` renvoie 1 quand un redemarrage est requis.
 maj_commande_reboot: "/usr/bin/dnf needs-restarting -r"
 maj_rc_reboot_requis: 1
+# Verifie dans les depots Rocky 10 : la commande vient de dnf-plugins-core.
+# Rocky 10 est reste sur DNF4, elle n'est integree a aucun dnf5.
+maj_paquet_detection: dnf-plugins-core
+maj_rc_attendus: [0, 1]

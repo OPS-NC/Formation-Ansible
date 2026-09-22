@@ -318,15 +318,25 @@ ssh-keygen -t ed25519 -C "formation-ansible" -f ~/.ssh/id_ed25519 -N ""
 ansible-playbook playbooks/base.yml --syntax-check
 ansible-lint playbooks/
 
-# 2. Simulation avec différentiel
+# 2. Application
+ansible-playbook playbooks/base.yml
+
+# 3. Test d'idempotence : aucun `changed` attendu
+ansible-playbook playbooks/base.yml
+
+# 4. Audit de conformité, sur une machine désormais convergée
 ansible-playbook playbooks/base.yml --check --diff
-
-# 3. Application
-ansible-playbook playbooks/base.yml
-
-# 4. Test d'idempotence : aucun `changed` attendu
-ansible-playbook playbooks/base.yml
 ```
+
+> **Attention — l'ordre n'est pas interchangeable**
+> Sur une machine **vierge**, `--check` ne peut pas valider l'ensemble du playbook. Les paquets
+> ne sont pas installés et le compte de service n'est pas créé : les tâches suivantes portent
+> alors sur un service ou un utilisateur qui n'existe pas, et échouent. C'est une limite connue
+> du mode simulation, pas un défaut du playbook.
+>
+> La simulation prend tout son sens **après** la première convergence : elle devient un audit de
+> dérive, exécutable sans risque et aussi souvent qu'on le souhaite. C'est l'usage retenu dans
+> la chaîne d'intégration du module 10.
 
 ### Résultat attendu
 
@@ -360,6 +370,7 @@ générée, la tâche de dépôt est ignorée : `ok=11 skipped=1`.
 | `The task includes an option with an undefined variable` | Variable de groupe absente pour une famille |
 | `sudo: parse error in /etc/sudoers.d/...` | `validate` non utilisé |
 | Tâches ignorées en `--check` | Comportement normal de `command` et `shell` |
+| Échec en `--check` sur une machine vierge | Attendu : simuler après la première convergence |
 
 ### Pour aller plus loin
 

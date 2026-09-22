@@ -1,0 +1,63 @@
+---
+# TP 10 - Playbook principal du fil rouge, secrets chiffres.
+#
+# Difference avec la version du TP 05 : le mot de passe PostgreSQL n'est plus
+# une chaine litterale. Il est resolu depuis l'inventaire, ou `main.yml` en
+# clair pointe vers `vault_postgresql_motdepasse` chiffre dans `vault.yml`.
+#
+# Execution :
+#   ansible-playbook -i corrige/tp02-inventaire/inventories/dev/hosts.yml \
+#                    -i corrige/tp10-secrets/inventories/dev/ \
+#                    --vault-id dev@/tmp/vp_dev \
+#                    corrige/tp10-secrets/site.yml
+# Le playbook ne contient plus de logique : il associe des machines a des roles
+# et leur fournit des donnees. Toute la mecanique vit dans les roles.
+
+- name: Configuration de base du parc
+  hosts: all
+  become: true
+  roles:
+    - role: base
+
+- name: Deploiement des serveurs web
+  hosts: web
+  become: true
+  roles:
+    - role: nginx
+      nginx_site_racine: "{{ site_racine }}"
+      nginx_port_defaut: "{{ http_port }}"
+      nginx_sites:
+        - nom: vitrine
+          titre: Site vitrine de la formation
+
+        - nom: api
+          port: 8080
+          alias:
+            - api-v1
+            - api-legacy
+          log_level: info
+          proxies:
+            /v1/: http://127.0.0.1:9001
+            /v2/: http://127.0.0.1:9002
+
+        - nom: ancien
+          https_redirect: true
+
+- name: Deploiement de la base de donnees
+  hosts: db
+  become: true
+  roles:
+    - role: postgres
+      postgres_port: "{{ postgresql_port }}"
+      postgres_ouvrir_firewall: true
+      postgres_bases:
+        - nom: "{{ postgresql_base }}"
+          proprietaire: applicatif
+      postgres_comptes:
+        - nom: applicatif
+          # Le secret ne figure plus dans le code : il vient de
+          # group_vars/db/main.yml, qui pointe vers la variable chiffree
+          # vault_postgresql_motdepasse.
+          mot_de_passe: "{{ postgresql_motdepasse }}"
+          base: "{{ postgresql_base }}"
+          privileges: ALL

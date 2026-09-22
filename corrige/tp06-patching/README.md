@@ -23,14 +23,25 @@ ansible-playbook \
 
 ## Vérification
 
+Les DEUX sources d'inventaire sont indispensables : la seconde porte
+`maj_commande_reboot` et `maj_rc_reboot_requis`, sans lesquelles la detection
+du redemarrage echoue.
+
 ```bash
 P=corrige/tp06-patching/playbooks/patching.yml
-I=corrige/tp02-inventaire/inventories/dev/hosts.yml
+I1=corrige/tp02-inventaire/inventories/dev/hosts.yml
+I2=corrige/tp06-patching/inventories/dev/
 
 ansible-lint corrige/tp06-patching/
-ansible-playbook -i $I $P --check --diff
-ansible-playbook -i $I $P
+ansible-playbook -i $I1 -i $I2 $P --check --diff
+ansible-playbook -i $I1 -i $I2 $P
 cat corrige/tp06-patching/rapport-patching.json
+```
+
+Verification rapide du chargement des variables :
+
+```bash
+ansible-inventory -i $I1 -i $I2 --host db01 | grep maj_
 ```
 
 ## Ce que le corrigé illustre
@@ -57,8 +68,9 @@ normalise le résultat dans une variable unique.
 | Debian | `test -f /var/run/reboot-required` | 0 |
 | RHEL / Rocky | `dnf needs-restarting -r` | 1 |
 
-> À confirmer sur la VM Rocky 10 : `needs-restarting` est intégré à dnf5 sur EL10, alors qu'il
-> provenait du paquet `dnf-utils` sur les versions antérieures.
+> Vérifié dans les dépôts Rocky 10 : `needs-restarting` est fourni par **`dnf-plugins-core`**
+> (BaseOS). Rocky 10 est resté sur **DNF4** ; ni `dnf5` ni `python3-libdnf5` n'y sont
+> distribués. Le playbook installe donc ce paquet avant d'appeler la commande.
 
 ## Rapport produit
 

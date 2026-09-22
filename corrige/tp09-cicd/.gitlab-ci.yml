@@ -46,7 +46,22 @@ molecule:
   # --cgroupns=host.
 
 # --- 3. Simulation sur l'environnement de developpement --------------------
+#
+# PREREQUIS, souvent oublies : ces deux etapes joignent des machines reelles.
+#   - L'executeur doit avoir une route vers le parc. Un runner heberge n'a
+#     AUCUN acces au reseau host-only 192.168.56.0/24 du lab : il faut un
+#     runner installe sur une machine qui le voit (tag `lab` ci-dessous).
+#   - L'identite SSH ne peut pas venir de `.vagrant/`, exclu de Git et absent
+#     du checkout. Elle est fournie par un secret CI et le compte de service
+#     `ansible` cree au TP 03.
 check:
+  tags: [lab]
+  before_script:
+    - ansible-galaxy collection install -r collections/requirements.yml
+    # Identite SSH issue d'un secret CI, jamais des cles Vagrant du poste.
+    - install -d -m 700 ~/.ssh
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_ed25519
+    - chmod 600 ~/.ssh/id_ed25519
   stage: check
   script:
     - echo "$VAULT_PASSWORD" > .vault_pass
@@ -61,7 +76,10 @@ check:
     name: dev
 
 # --- 4. Application en production : manuelle et sur tag uniquement ---------
+# `inventories/prod/` doit exister et decrire un parc reellement joignable par
+# l'executeur. La formation ne livre que `dev` : cette etape est un modele.
 deploy:
+  tags: [lab]
   stage: deploy
   script:
     - echo "$VAULT_PASSWORD" > .vault_pass

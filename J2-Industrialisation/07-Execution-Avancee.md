@@ -266,7 +266,8 @@ garantie et rapport consolidé.
 Dans un `block` :
 
 1. Déposer un fichier `MAINTENANCE` dans la racine web (uniquement pour les machines du groupe
-   `web`).
+   `web`). **Ce fichier est un témoin** : aucun répartiteur du lab ne le consulte. En production,
+   il faut le relier à la sonde de santé pour que la sortie de rotation soit réelle.
 2. Mettre à jour **tous** les paquets.
 3. Déterminer si un redémarrage est nécessaire. Le mécanisme diffère : fichier témoin
    `/var/run/reboot-required` sur Debian, code retour de `dnf needs-restarting -r` sur Rocky.

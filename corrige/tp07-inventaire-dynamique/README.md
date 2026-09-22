@@ -59,7 +59,14 @@ Le dictionnaire `ansible_facts` n'est reconstitué qu'au moment du play.
 
 ## Utilisation avec le TP 06
 
+L'inventaire de ce TP ne contient pas les variables de patching du TP 06 :
+il faut donc charger les deux repertoires.
+
 ```bash
-ansible-playbook playbooks/patching.yml --limit rang_canari
-ansible-playbook playbooks/patching.yml --limit 'serveurs:!rang_canari'
+I1=corrige/tp07-inventaire-dynamique/inventories/dev/
+I2=corrige/tp06-patching/inventories/dev/
+P=corrige/tp06-patching/playbooks/patching.yml
+
+ansible-playbook -i $I1 -i $I2 $P --limit rang_canari
+ansible-playbook -i $I1 -i $I2 $P --limit 'serveurs:!rang_canari'
 ```

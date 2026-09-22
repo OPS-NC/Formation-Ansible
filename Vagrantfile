@@ -103,6 +103,9 @@ servers = [
   {
     :hostname  => "net01",
     :ip        => "192.168.56.51",
+    # Seconde carte : le TP configure deux interfaces (eth1 et eth2).
+    # Sans elle, eth2 n'existe pas et la configuration est rejetee.
+    :ip2       => "10.10.20.1",
     :box       => BOX_VYOS,
     :version   => BOX_VYOS_VERSION,
     :ram       => 1024,
@@ -137,6 +140,11 @@ Vagrant.configure("2") do |config|
       # eth0 reste le NAT de VirtualBox (10.0.2.15, identique sur toutes les VMs) ;
       # ne jamais s'y fier — voir le piege k3s du module 15.
       node.vm.network "private_network", ip: machine[:ip]
+
+      # Certaines machines ont une seconde carte sur un reseau applicatif.
+      if machine[:ip2]
+        node.vm.network "private_network", ip: machine[:ip2]
+      end
 
       # Dossier partage desactive : Ansible travaille en SSH, il n'en a pas besoin.
       # Cela evite aussi la panne classique sur les cibles RHEL-like, ou une mise a

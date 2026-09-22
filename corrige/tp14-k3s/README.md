@@ -17,8 +17,14 @@ templates/application.yaml.j2 manifeste unique paramétré
 
 ```bash
 vagrant up k3s-master k3s-node01 k3s-node02
-pip install 'kubernetes>=24.2.0' jsonpatch
+# `pip install` est refuse sur Ubuntu 26.04 (PEP 668, module 02). Les
+# bibliotheques doivent entrer dans l'environnement virtuel d'Ansible.
+pipx inject ansible 'kubernetes>=24.2.0' jsonpatch
 ansible-galaxy collection install kubernetes.core
+
+# Binaires appeles par les modules et par le TP, absents du parcours jusqu'ici
+sudo apt install -y kubernetes-client          # kubectl
+curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 ```
 
 ## Vérification

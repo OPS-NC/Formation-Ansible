@@ -110,12 +110,21 @@ pre-commit run --all-files  # passage manuel sur tout le dépôt
 
 Quatre étapes, du moins cher au plus cher :
 
-| Étape | Contenu | Durée | Déclenchement |
-|---|---|---|---|
-| `lint` | `ansible-lint --profile production` | secondes | Chaque poussée |
-| `test` | `molecule test` | minutes | Modification d'un rôle |
-| `check` | `ansible-playbook --check --diff` sur `dev` | minutes | Chaque fusion |
-| `deploy` | Application réelle sur `prod` | — | Manuel, sur étiquette |
+| Étape | Contenu | Durée | Déclenchement | Joint des machines ? |
+|---|---|---|---|---|
+| `lint` | `ansible-lint --profile production` | secondes | Chaque poussée | Non |
+| `test` | `molecule test` | minutes | Modification d'un rôle | Non, conteneurs |
+| `check` | `ansible-playbook --check --diff` sur `dev` | minutes | Chaque fusion | **Oui** |
+| `deploy` | Application réelle sur `prod` | — | Manuel, sur étiquette | **Oui** |
+
+> **Attention — les deux dernières étapes ont des prérequis d'infrastructure**
+> `lint` et `test` tournent n'importe où. `check` et `deploy` joignent de vraies machines, ce qui
+> impose deux conditions rarement anticipées :
+> - **une route vers le parc.** Un exécuteur hébergé n'a aucun accès au réseau host-only du lab.
+>   Il faut un exécuteur installé sur une machine qui le voit, sélectionné par étiquette ;
+> - **une identité SSH issue d'un secret CI.** Les clés de `.vagrant/` sont propres au poste du
+>   stagiaire, exclues de Git et absentes du checkout. On utilise le compte de service créé au
+>   TP 03 et une clé dédiée.
 
 ### GitLab CI
 
@@ -249,7 +258,12 @@ additional_build_steps:
     - RUN ansible-galaxy collection list
 ```
 
+Ces deux outils ne font pas partie des trois installations du module 02 : il faut les ajouter.
+
 ```bash
+pipx install ansible-builder
+pipx install ansible-navigator
+
 ansible-builder build -t formation-ee:1.0 -f execution-environment.yml
 ```
 

@@ -1,5 +1,8 @@
 ---
 # Specificites Debian : ce sont des donnees, pas des conditions dans les taches.
+# `htop` est disponible dans les depots Debian, contrairement a Rocky ou il
+# n'existe que dans EPEL : c'est exactement le genre d'ecart que les variables
+# de groupe absorbent.
 paquets_base:
   - curl
   - htop

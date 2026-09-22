@@ -82,7 +82,13 @@
 - name: Verifier que chaque site repond
   ansible.builtin.uri:
     url: "http://127.0.0.1:{{ site.port | default(nginx_port_defaut) }}/"
-    status_code: [200, 301]
+    # L'en-tete Host designe le vhost a interroger ; sans lui, nginx sert le
+    # serveur par defaut du port. `follow_redirects: none` evite de suivre la
+    # redirection HTTPS d'un site qui la declare, car TLS n'est pas servi ici.
+    headers:
+      Host: "{{ site.nom }}.{{ nginx_domaine }}"
+    follow_redirects: none
+    status_code: "{{ [301] if site.https_redirect | default(false) else [200] }}"
   loop: "{{ nginx_sites }}"
   loop_control:
     loop_var: site

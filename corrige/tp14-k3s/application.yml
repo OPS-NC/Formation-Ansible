@@ -75,17 +75,39 @@
     # `template:` rend le gabarit Jinja2 SUR LE CONTROLEUR avant de l'envoyer
     # a l'API. Les manifestes deviennent parametrables comme n'importe quel
     # fichier de configuration.
+    # Le gabarit contient TROIS ressources : Deployment, Service et Ingress.
+    # Une condition d'attente commune serait fausse : `Available` n'existe que
+    # sur un Deployment. Appliquee a un Service, l'attente expire.
     - name: Deployer l application
       kubernetes.core.k8s:
         kubeconfig: "{{ kubeconfig }}"
         state: present
         apply: true
         template: templates/application.yaml.j2
+
+    - name: Attendre que le deploiement soit disponible
+      kubernetes.core.k8s_info:
+        kubeconfig: "{{ kubeconfig }}"
+        kind: Deployment
+        name: "{{ app_nom }}"
+        namespace: "{{ app_namespace }}"
         wait: true
         wait_condition:
           type: Available
           status: "True"
         wait_timeout: 180
+
+    - name: Verifier que le Service et l Ingress existent
+      kubernetes.core.k8s_info:
+        kubeconfig: "{{ kubeconfig }}"
+        kind: "{{ item }}"
+        name: "{{ app_nom }}"
+        namespace: "{{ app_namespace }}"
+      register: ressources_exposition
+      failed_when: ressources_exposition.resources | length == 0
+      loop:
+        - Service
+        - Ingress
 
     - name: Verifier que les replicas sont prets
       kubernetes.core.k8s_info:
@@ -100,20 +122,22 @@
         that:
           - deploiement.resources[0].status.availableReplicas == app_replicas
 
-    - name: Ajouter le depot Helm de Bitnami
+    # Demonstration Helm. On evite deliberement metrics-server : k3s en deploie
+    # deja un, et un second chart revendiquerait le meme APIService
+    # v1beta1.metrics.k8s.io. podinfo est une application de demonstration
+    # autonome, sans composant concurrent dans le cluster.
+    - name: Ajouter un depot Helm
       kubernetes.core.helm_repository:
-        name: bitnami
-        repo_url: https://charts.bitnami.com/bitnami
+        name: podinfo
+        repo_url: https://stefanprodan.github.io/podinfo
 
-    - name: Installer un chart Helm
+    - name: Installer le chart de demonstration
       kubernetes.core.helm:
         kubeconfig: "{{ kubeconfig }}"
-        name: metrics
-        chart_ref: bitnami/metrics-server
-        release_namespace: kube-system
+        name: podinfo
+        chart_ref: podinfo/podinfo
+        release_namespace: "{{ app_namespace }}"
+        create_namespace: false
         wait: true
         values:
-          apiService:
-            create: true
-          extraArgs:
-            - --kubelet-insecure-tls
+          replicaCount: 2

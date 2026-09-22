@@ -4,7 +4,7 @@
 
 server {
     listen {{ site.port | default(nginx_port_defaut) }};
-    server_name {{ site.nom }}.{{ parc_domaine }}{% if site.alias is defined %} {{ site.alias | join(' ') }}{% endif %};
+    server_name {{ site.nom }}.{{ nginx_domaine }}{% if site.alias is defined %} {{ site.alias | join(' ') }}{% endif %};
 
     root {{ nginx_site_racine }}/{{ site.nom }};
     index index.html;

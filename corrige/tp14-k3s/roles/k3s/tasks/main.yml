@@ -60,6 +60,8 @@
     owner: root
     group: root
     mode: "0600"
+  # Le fichier contient le jeton d'adhesion au cluster : pas de differentiel.
+  diff: false
   notify: Redemarrer k3s
 
 - name: Telecharger le script d installation
@@ -71,15 +73,26 @@
 # `creates` rend l'installation idempotente sans avoir a interpreter la sortie
 # du script. Les options de fonctionnement viennent de config.yaml, pas de
 # INSTALL_K3S_EXEC : seul le role (server ou agent) est passe ici.
-- name: Installer k3s
+# `creates` rend l'installation idempotente, mais fige aussi la version : une
+# fois le binaire present, changer `k3s_version` n'aurait plus aucun effet.
+# On compare donc explicitement la version installee a la version cible.
+- name: Relever la version de k3s deja installee
+  ansible.builtin.command: /usr/local/bin/k3s --version
+  register: k3s_version_installee
+  changed_when: false
+  failed_when: false
+
+- name: Installer ou mettre a niveau k3s
   ansible.builtin.command:
     cmd: /usr/local/bin/k3s-install.sh
-    creates: /usr/local/bin/k3s
+  when: k3s_version not in (k3s_version_installee.stdout | default(''))
+  changed_when: true
   environment:
     INSTALL_K3S_VERSION: "{{ k3s_version }}"
     INSTALL_K3S_EXEC: "{{ 'server' if 'k3s_server' in group_names else 'agent' }}"
     K3S_TOKEN: "{{ k3s_token }}"
   register: k3s_installation
+  notify: Redemarrer k3s
 
 - name: Activer et demarrer le service
   ansible.builtin.systemd_service:

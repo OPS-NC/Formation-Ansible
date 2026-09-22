@@ -129,9 +129,22 @@ depuis le poste. On substitue l'adresse en le rapatriant.
 **Version 6.6**, prérequis : le client Python `kubernetes >= 24.2.0`, plus `jsonpatch` sur le
 nœud de contrôle.
 
+> **Attention**
+> Ces bibliothèques doivent être installées **dans l'environnement virtuel qui exécute Ansible**,
+> pas dans le Python du système. Sur Ubuntu 26.04, `pip install` est d'ailleurs refusé par
+> PEP 668 (module 02). Avec le parcours pipx : `pipx inject ansible 'kubernetes>=24.2.0'
+> jsonpatch`. Les modules `helm` et les commandes `kubectl` du TP exigent en outre ces deux
+> **binaires** sur le poste : ni k3s ni la collection ne les installent.
+
 ```bash
-pip install 'kubernetes>=24.2.0' jsonpatch
+# `pip install` est refuse sur Ubuntu 26.04 (PEP 668, module 02). Les
+# bibliotheques doivent entrer dans l'environnement virtuel d'Ansible.
+pipx inject ansible 'kubernetes>=24.2.0' jsonpatch
 ansible-galaxy collection install kubernetes.core
+
+# Binaires appeles par les modules et par le TP, absents du parcours jusqu'ici
+sudo apt install -y kubernetes-client          # kubectl
+curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 ```
 
 | Module | Usage |
@@ -237,8 +250,14 @@ L'inverse est aussi possible :
 
 ```bash
 vagrant up k3s-master k3s-node01 k3s-node02
-pip install 'kubernetes>=24.2.0' jsonpatch
+# `pip install` est refuse sur Ubuntu 26.04 (PEP 668, module 02). Les
+# bibliotheques doivent entrer dans l'environnement virtuel d'Ansible.
+pipx inject ansible 'kubernetes>=24.2.0' jsonpatch
 ansible-galaxy collection install kubernetes.core
+
+# Binaires appeles par les modules et par le TP, absents du parcours jusqu'ici
+sudo apt install -y kubernetes-client          # kubectl
+curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 ```
 
 ### Énoncé

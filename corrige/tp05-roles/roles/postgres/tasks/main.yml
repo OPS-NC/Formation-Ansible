@@ -23,19 +23,8 @@
 - name: Declencher les handlers avant toute operation SQL
   ansible.builtin.meta: flush_handlers
 
-- name: Creer les bases de donnees
-  community.postgresql.postgresql_db:
-    name: "{{ item.nom }}"
-    owner: "{{ item.proprietaire | default(omit) }}"
-    encoding: "{{ item.encodage | default('UTF8') }}"
-    state: present
-  become: true
-  become_user: postgres
-  loop: "{{ postgres_bases }}"
-  loop_control:
-    label: "{{ item.nom }}"
-  when: not ansible_check_mode
-
+# L'ORDRE COMPTE : une base declarant un proprietaire ne peut etre creee
+# que si ce role PostgreSQL existe deja. Comptes, puis bases, puis privileges.
 - name: Creer les comptes applicatifs
   community.postgresql.postgresql_user:
     name: "{{ item.nom }}"
@@ -47,6 +36,19 @@
   loop_control:
     label: "{{ item.nom }}"
   no_log: true
+  when: not ansible_check_mode
+
+- name: Creer les bases de donnees
+  community.postgresql.postgresql_db:
+    name: "{{ item.nom }}"
+    owner: "{{ item.proprietaire | default(omit) }}"
+    encoding: "{{ item.encodage | default('UTF8') }}"
+    state: present
+  become: true
+  become_user: postgres
+  loop: "{{ postgres_bases }}"
+  loop_control:
+    label: "{{ item.nom }}"
   when: not ansible_check_mode
 
 - name: Accorder les privileges sur les bases

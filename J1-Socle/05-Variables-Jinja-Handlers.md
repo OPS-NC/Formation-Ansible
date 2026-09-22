@@ -382,10 +382,22 @@ ansible-playbook playbooks/web.yml        # idempotence : changed=0, aucun handl
 ### Vérification
 
 ```bash
-curl -s http://192.168.56.11/ | head -5
-curl -s -H "Host: api.lab.local" http://192.168.56.11:8080/v1/ -o /dev/null -w "%{http_code}\n"
+# Page statique du site vitrine
+curl -s -H "Host: vitrine.lab.local" http://192.168.56.11/ | head -5
+
+# Le vhost api repond, et sa redirection n'est pas suivie
+curl -s -H "Host: ancien.lab.local" -o /dev/null -w "%{http_code}\n" http://192.168.56.11/
+
+# Configuration acceptee par nginx
 ansible web -a "nginx -t" --become
 ```
+
+> **Attention**
+> Les blocs `location /v1/` et `/v2/` pointent vers `127.0.0.1:9001` et `9002`. **Aucun service
+> n'écoute sur ces ports** dans la formation : les interroger renvoie logiquement un `502 Bad
+> Gateway`. Ce n'est pas une erreur du TP. L'objectif ici est le **rendu de la configuration**,
+> pas le fonctionnement du proxy ; le gabarit produit bien les blocs attendus, ce que
+> `nginx -t` confirme.
 
 ### Points d'attention
 

@@ -3,3 +3,7 @@
 # Debian depose un fichier temoin quand un redemarrage est requis.
 maj_commande_reboot: "/usr/bin/test -f /var/run/reboot-required"
 maj_rc_reboot_requis: 0
+# `test` fait partie de coreutils : aucun paquet a installer.
+maj_paquet_detection: ""
+# 0 = fichier present (reboot requis), 1 = absent. Tout autre code est anormal.
+maj_rc_attendus: [0, 1]

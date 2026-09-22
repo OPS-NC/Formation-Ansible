@@ -7,6 +7,13 @@
 
   vars:
     sites_attendus: [vitrine, api, ancien]
+    nginx_domaine: test.local
+
+  # `converge` et `verify` sont DEUX executions distinctes : les variables du
+  # role ne persistent pas de l'une a l'autre. Les donnees necessaires aux
+  # assertions doivent donc etre chargees explicitement.
+  vars_files:
+    - ../../vars/main.yml
 
   tasks:
 
@@ -51,6 +58,10 @@
     - name: Le site vitrine doit repondre
       ansible.builtin.uri:
         url: http://127.0.0.1/
+        headers:
+          Host: "vitrine.{{ nginx_domaine }}"
+        follow_redirects: none
+        status_code: [200]
         return_content: true
       register: nginx_page
 

@@ -15,6 +15,9 @@ nginx_site_racine: /var/www/formation
 # Port par defaut, utilise quand un site n'en precise pas.
 nginx_port_defaut: 80
 
+# Domaine des sites. Le role ne depend ainsi d'aucune variable d'inventaire.
+nginx_domaine: "{{ parc_domaine | default('lab.local') }}"
+
 # Supprimer le site livre par la distribution.
 nginx_supprimer_site_defaut: true
 

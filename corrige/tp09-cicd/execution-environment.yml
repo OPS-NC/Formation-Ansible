@@ -26,8 +26,10 @@ dependencies:
   ansible_runner:
     package_pip: ansible-runner
 
-  # Les collections du projet, reutilisees telles quelles.
-  galaxy: ../../collections/requirements.yml
+  # Chemin RELATIF A CE FICHIER une fois copie a la racine du projet, comme
+  # l'indique le README. Construire depuis corrige/tp09-cicd/ demande soit de
+  # copier le fichier a la racine, soit d'ajuster ce chemin.
+  galaxy: collections/requirements.yml
 
   # Dependances Python des collections (psycopg2 pour community.postgresql,
   # kubernetes pour kubernetes.core au module 15).

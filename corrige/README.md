@@ -27,7 +27,7 @@ placez-vous à la racine du dépôt (les chemins relatifs, notamment les clés S
 Vagrant, en dépendent) :
 
 ```bash
-ansible-playbook -i corrige/tp03-playbook-base/inventories/dev/hosts.yml \
+ansible-playbook -i corrige/tp02-inventaire/inventories/dev/hosts.yml \
                  corrige/tp03-playbook-base/playbooks/base.yml --check --diff
 ```
 

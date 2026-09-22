@@ -25,9 +25,12 @@ qemu_extended_statuses: true
 # groupes de l inventaire statique.
 group_prefix: pve_
 
-# Ne garder que les machines demarrees et etiquetees `dev`.
+# Ne garder que les machines demarrees ET etiquetees `dev`.
+# Le second filtre suppose que les tags sont REELLEMENT poses sur les VMs :
+# c'est le role de l'option `tags` du playbook de creation.
 filters:
   - "proxmox_status == 'running'"
+  - "'dev' in (proxmox_tags_parsed | default([]))"
 
 keyed_groups:
   # Un groupe par tag Proxmox : c'est le lien entre l'hyperviseur et Ansible.
@@ -40,6 +43,21 @@ keyed_groups:
     separator: "_"
 
 compose:
-  # L adresse de connexion vient de l agent QEMU si disponible.
-  ansible_host: proxmox_agent_interfaces[0].ip_addresses[0] | default(proxmox_name)
+  # L'adresse de connexion vient de l'agent QEMU.
+  #
+  # Deux pieges verifies dans le code du greffon 2.0.0 :
+  #   - la sous-cle s'ecrit `ip-addresses` avec un TIRET, pas un underscore ;
+  #   - les valeurs sont au format CIDR ("192.168.60.11/24"), qu'il faut donc
+  #     tronquer avant de s'en servir comme adresse de connexion.
+  # On ecarte aussi la boucle locale et on ne prend pas aveuglement la
+  # premiere interface venue.
+  ansible_host: >-
+    (proxmox_agent_interfaces | default([], true)
+      | rejectattr('name', 'eq', 'lo')
+      | map(attribute='ip-addresses')
+      | flatten
+      | select('match', '^(?!127\.)(\d{1,3}\.){3}\d{1,3}/')
+      | first
+      | default(proxmox_name)
+    ).split('/')[0]
   memoire_go: (proxmox_maxmem / 1073741824) | round(1)

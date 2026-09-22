@@ -224,7 +224,15 @@ Depuis `http://192.168.56.31:3000` :
 1. **Projet** « Formation Ansible ».
 2. **Key Store** : la clé SSH d'accès aux machines, et le mot de passe vault du module 11.
 3. **Repository** : le dépôt Git du fil rouge, branche `main`.
-4. **Inventory** : `inventories/dev/hosts.yml`, associé à la clé SSH.
+4. **Inventory** : un inventaire **dédié à Semaphore**, associé à la clé SSH du Key Store.
+
+   > **Attention**
+   > L'inventaire du TP 02 **ne fonctionne pas ici**. Il référence
+   > `.vagrant/machines/<nom>/virtualbox/private_key`, une clé propre au poste du stagiaire et
+   > absente du dépôt cloné par Semaphore. Il impose de plus `ansible_user: vagrant`, alors que
+   > le compte de service `ansible` a été créé au TP 03. Or une variable d'inventaire
+   > **prime sur** une clé fournie par l'interface : il faut donc un inventaire sans chemin de
+   > clé et utilisant le bon compte.
 5. **Task Template** exécutant `site.yml`.
 6. **Exécution**, puis lecture du journal.
 7. **Schedule** : exécution quotidienne du playbook de patching.
@@ -249,6 +257,7 @@ Depuis `http://192.168.56.31:3000` :
 | `BoltDB not supported` | Dialecte supprimé en 2.19 |
 | Le service ne démarre pas | Le `.deb` ne fournit pas d'unité systemd |
 | Module introuvable à l'exécution | Collection absente de `collections/requirements.yml` |
+| `Permission denied (publickey)` depuis Semaphore | Inventaire renvoyant vers les clés Vagrant du poste |
 | Webhook GitLab rejeté | `auth_method: github` au lieu de `token` |
 
 ### Pour aller plus loin

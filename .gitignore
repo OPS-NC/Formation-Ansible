@@ -33,3 +33,7 @@ __pycache__/
 Thumbs.db
 rapport-patching.json
 facts_cache/
+
+# Kubeconfig genere par le TP 14 : donne un acces administrateur au cluster.
+corrige/tp14-k3s/kubeconfig
+kubeconfig

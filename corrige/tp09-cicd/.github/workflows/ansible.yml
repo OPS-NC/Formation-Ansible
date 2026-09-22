@@ -30,7 +30,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        role: [nginx, base]
+        # Seuls les roles possedant un repertoire molecule/ sont listes.
+        # Ajouter `base` ici ferait echouer le job : il n'a pas de scenario.
+        role: [nginx]
     steps:
       - uses: actions/checkout@v6
 

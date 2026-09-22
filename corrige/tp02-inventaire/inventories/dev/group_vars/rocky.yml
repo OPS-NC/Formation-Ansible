@@ -1,9 +1,15 @@
 ---
 # Specificites Rocky Linux / famille RHEL.
+#
+# Deux pieges verifies dans les depots Rocky 10 :
+#   - `htop` n'est PAS dans BaseOS ni AppStream, uniquement dans EPEL. Il est
+#     donc ecarte du socle, qui ne doit dependre que des depots par defaut.
+#   - Rocky 10 est reste sur DNF4 : ni `dnf5`, ni `libdnf5`, ni
+#     `python3-libdnf5` n'y sont distribues. Les liaisons Python attendues par
+#     le module ansible.builtin.dnf sont fournies par `python3-dnf`.
 paquets_base:
   - curl
-  - htop
-  - python3-libdnf5
+  - python3-dnf
 service_ntp: chronyd
 utilisateur_web: nginx
 paquet_ntp: chrony

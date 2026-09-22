@@ -19,6 +19,12 @@ fixtures/
 ```bash
 vagrant up net01
 ansible-galaxy collection install vyos.vyos ansible.netcommon ansible.utils
+
+# Bibliotheques Python : une collection Galaxy n'installe PAS ses dependances.
+#   ntc-templates      : gabarits d'analyse utilises par cli_parse
+#   ansible-pylibssh   : transport SSH de network_cli (paramiko a ete retire
+#                        d'ansible-core 2.21)
+pipx inject ansible ntc-templates ansible-pylibssh
 ```
 
 ## Vérification

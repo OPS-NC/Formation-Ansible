@@ -27,7 +27,9 @@ pipx install pre-commit
 pre-commit install
 pre-commit run --all-files
 
-# Execution environment
+# Execution environment (outils absents du module 02, a installer)
+pipx install ansible-builder
+pipx install ansible-navigator
 ansible-builder build -t formation-ee:1.0 -f execution-environment.yml
 podman run --rm formation-ee:1.0 ansible-galaxy collection list
 ansible-navigator run site.yml --eei formation-ee:1.0 -m stdout

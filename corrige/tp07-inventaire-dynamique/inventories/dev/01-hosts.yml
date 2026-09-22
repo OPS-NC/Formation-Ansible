@@ -12,6 +12,10 @@ all:
   # les sources d'inventaire.
   vars:
     parc_environnement: dev
+    # `parc_domaine` est aussi declare ici, et pas seulement dans group_vars :
+    # sans cela, la variable composee `fqdn` echoue silencieusement
+    # (strict: false) et n'apparait jamais dans l'inventaire.
+    parc_domaine: lab.local
   children:
 
     # --- Axe fonctionnel ---------------------------------------------------

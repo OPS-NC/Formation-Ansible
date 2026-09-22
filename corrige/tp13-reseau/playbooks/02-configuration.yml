@@ -45,13 +45,45 @@
         config: "{{ adresses_cibles }}"
         state: replaced
 
-    - name: Verifier l idempotence en relisant l etat
+    - name: Relire la configuration appliquee
       vyos.vyos.vyos_l3_interfaces:
         state: gathered
       register: verification
 
-    - name: Les adresses appliquees sont bien presentes
+    # Verifier qu'une interface PORTE LE BON NOM ne prouve rien : il faut
+    # comparer les adresses reellement configurees au modele attendu.
+    - name: Chaque adresse cible est presente sur la bonne interface
       ansible.builtin.assert:
         that:
-          - verification.gathered | selectattr('name', 'eq', 'eth1') | list | length == 1
-        fail_msg: eth1 est absente de la configuration relue
+          - adresses_relues[item.name] is defined
+          - item.ipv4 | map(attribute='address') | list
+            | difference(adresses_relues[item.name]) | length == 0
+        fail_msg: >-
+          {{ item.name }} attendait
+          {{ item.ipv4 | map(attribute='address') | join(', ') }},
+          mais porte {{ adresses_relues[item.name] | default([]) | join(', ') }}
+      loop: "{{ adresses_cibles }}"
+      loop_control:
+        label: "{{ item.name }}"
+      vars:
+        adresses_relues: >-
+          {{ dict(verification.gathered | map(attribute='name')
+                  | zip(verification.gathered
+                        | map(attribute='ipv4', default=[])
+                        | map('map', attribute='address') | map('list') | list)) }}
+
+    # Second passage : une configuration deja conforme ne doit produire aucun
+    # changement. C'est le test d'idempotence du module 04, applique au reseau.
+    - name: Rejouer la configuration pour prouver l idempotence
+      vyos.vyos.vyos_l3_interfaces:
+        config: "{{ adresses_cibles }}"
+        state: replaced
+      register: second_passage
+
+    - name: Le second passage ne doit rien modifier
+      ansible.builtin.assert:
+        that:
+          - not second_passage.changed
+        fail_msg: >-
+          Le playbook n'est pas idempotent : commandes rejouees
+          {{ second_passage.commands | default([]) | join(' ; ') }}

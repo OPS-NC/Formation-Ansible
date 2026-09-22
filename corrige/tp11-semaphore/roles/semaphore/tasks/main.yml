@@ -91,6 +91,9 @@
     owner: root
     group: "{{ semaphore_utilisateur }}"
     mode: "0640"
+  # Ce fichier contient les trois cles de chiffrement. Le reflexe `--diff`
+  # enseigne au module 04 afficherait sinon leur contenu en clair.
+  diff: false
   notify: Redemarrer Semaphore
 
 - name: Appliquer les migrations de base de donnees

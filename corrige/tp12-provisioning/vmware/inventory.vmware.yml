@@ -19,7 +19,9 @@ keyed_groups:
   - key: guest.guestId
     prefix: os
     separator: "_"
-  - key: runtime.powerState
+  # Le greffon collecte `summary.runtime.powerState` par defaut, pas
+  # `runtime.powerState` : ce dernier produirait un groupe vide.
+  - key: summary.runtime.powerState
     prefix: etat
     separator: "_"
 
