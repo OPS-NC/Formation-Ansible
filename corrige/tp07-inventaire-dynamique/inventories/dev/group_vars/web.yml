@@ -1,0 +1,6 @@
+---
+# Variables du groupe fonctionnel `web`.
+http_port: 80
+site_racine: /var/www/formation
+banniere: "Serveur web - lab formation"
+origine_variable: "defini dans group_vars/web.yml"

@@ -1,0 +1,6 @@
+---
+# Variables propres a web01.
+# Les host_vars l'emportent sur TOUTES les group_vars.
+banniere: "web01 - frontal principal"
+poids_repartition: 2
+rang_maintenance: canari

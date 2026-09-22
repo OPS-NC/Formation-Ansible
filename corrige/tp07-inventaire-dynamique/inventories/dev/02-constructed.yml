@@ -1,0 +1,40 @@
+---
+# Inventaire CONSTRUIT : il ne declare aucune machine, il enrichit celles que
+# les autres sources ont deja fournies. Le prefixe numerique garantit qu'il est
+# lu APRES 01-hosts.yml : sans machines, il n'aurait rien a enrichir.
+plugin: ansible.builtin.constructed
+
+# strict: false -> une expression portant sur une variable absente est ignoree
+# au lieu de faire echouer tout l'inventaire. Indispensable tant que les facts
+# ne sont pas encore en cache.
+strict: false
+
+# Variables calculees, disponibles comme n'importe quelle variable d'inventaire.
+compose:
+  fqdn: inventory_hostname ~ '.' ~ parc_domaine
+  # ATTENTION : dans un greffon d'inventaire, les facts mis en cache sont
+  # exposes A PLAT (`ansible_memtotal_mb`) et NON sous le dictionnaire
+  # `ansible_facts`. Ce dernier n'est reconstitue qu'au moment du play.
+  memoire_go: (ansible_memtotal_mb | default(0) / 1024) | round(1)
+
+# Groupes crees a partir de la VALEUR d'une variable.
+keyed_groups:
+  - key: parc_environnement
+    prefix: env
+    separator: "_"
+
+  - key: ansible_distribution | default('inconnu')
+    prefix: os
+    separator: "_"
+
+  # Un groupe par rang de maintenance, pour piloter `serial` au TP 06.
+  - key: rang_maintenance | default('standard')
+    prefix: rang
+    separator: "_"
+
+# Groupes crees a partir d'une CONDITION booleenne.
+groups:
+  frontaux: "'web' in group_names"
+  bases_de_donnees: "'db' in group_names"
+  a_redemarrer_en_dernier: "'db' in group_names or 'ops' in group_names"
+  petite_memoire: "ansible_memtotal_mb | default(9999) | int < 1500"

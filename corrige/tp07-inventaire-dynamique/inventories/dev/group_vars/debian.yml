@@ -1,0 +1,10 @@
+---
+# Specificites Debian : ce sont des donnees, pas des conditions dans les taches.
+paquets_base:
+  - curl
+  - htop
+  - python3-apt
+service_ntp: systemd-timesyncd
+utilisateur_web: www-data
+origine_variable: "defini dans group_vars/debian.yml"
+paquet_ntp: systemd-timesyncd

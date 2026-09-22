@@ -1,0 +1,9 @@
+---
+# Specificites Rocky Linux / famille RHEL.
+paquets_base:
+  - curl
+  - htop
+  - python3-libdnf5
+service_ntp: chronyd
+utilisateur_web: nginx
+paquet_ntp: chrony
