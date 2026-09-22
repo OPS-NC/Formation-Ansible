@@ -7,6 +7,23 @@
   ansible.builtin.set_fact:
     nginx_conf: "{{ nginx_chemins[ansible_facts['os_family']] }}"
 
+# Rafraichir le cache de paquets est une difference de MECANISME entre familles,
+# pas une difference de valeur : `ansible.builtin.package` n'expose pas d'option
+# de rafraichissement, `apt` a `update_cache` et `dnf` gere le sien seul. C'est
+# donc l'un des rares cas ou une condition sur la famille est justifiee, au meme
+# titre que la mise a jour complete du TP 06.
+#
+# Sans cette tache, le role echoue sur toute machine dont le cache apt est vide
+# ou perime - un conteneur de test neuf, ou une box epinglee dont les paquets
+# ont ete retires du miroir :
+#   No package matching 'nginx' is available
+- name: Rafraichir le cache de paquets (famille Debian)
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+  changed_when: false
+  when: ansible_facts['os_family'] == 'Debian'
+
 - name: Installer nginx
   ansible.builtin.package:
     name: nginx
@@ -73,7 +90,10 @@
   ansible.builtin.file:
     path: "{{ nginx_conf.site_defaut }}"
     state: absent
-  when: nginx_supprimer_site_defaut | bool
+  when:
+    - nginx_supprimer_site_defaut | bool
+    # Vide sur RedHat : il n'y a pas de fichier de site par defaut a supprimer.
+    - nginx_conf.site_defaut | length > 0
   notify: configuration nginx modifiee
 
 - name: Declencher les handlers en attente
