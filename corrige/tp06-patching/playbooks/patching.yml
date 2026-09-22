@@ -39,6 +39,22 @@
             mode: "0644"
           when: "'web' in group_names"
 
+        # grub-pc redemande son disque d'installation a chaque mise a jour.
+        # Sans reponse enregistree dans debconf, elle ne peut pas etre posee en
+        # mode non interactif et la mise a jour complete s'arrete :
+        #   You must correct your GRUB install devices before proceeding
+        #   dpkg: error processing package grub-pc (--configure)
+        #   E: Sub-process /usr/bin/dpkg returned an error code (1)
+        # Preseeder la reponse AVANT la mise a jour est la seule facon propre de
+        # traiter un paquet qui pose une question pendant un apt non interactif.
+        - name: Enregistrer le disque d amorcage attendu par grub-pc
+          ansible.builtin.debconf:
+            name: grub-pc
+            question: grub-pc/install_devices
+            vtype: multiselect
+            value: "{{ maj_disque_amorcage }}"
+          when: ansible_facts['os_family'] == 'Debian'
+
         # `package` ne sait PAS mettre a jour tout un systeme de facon
         # portable : `dnf` documente `name: '*'` avec `state: latest`, mais
         # `apt` attend `upgrade: dist`. C'est une difference de MECANISME,

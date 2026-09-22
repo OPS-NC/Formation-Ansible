@@ -263,6 +263,12 @@ garantie et rapport consolidé.
 Écrire `playbooks/patching.yml` ciblant le groupe `serveurs`, avec `serial: 1` et
 `max_fail_percentage: 0`.
 
+> **Attention — un paquet peut poser une question.** `grub-pc` redemande son disque
+> d'installation à chaque mise à jour, et la box Debian du lab ne porte aucune réponse
+> enregistrée. En mode non interactif, `apt` s'arrête sur
+> `dpkg: error processing package grub-pc (--configure)`. La réponse doit être enregistrée
+> dans debconf **avant** la mise à jour (`ansible.builtin.debconf`).
+
 Dans un `block` :
 
 1. Déposer un fichier `MAINTENANCE` dans la racine web (uniquement pour les machines du groupe

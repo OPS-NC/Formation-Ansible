@@ -7,3 +7,15 @@ maj_rc_reboot_requis: 0
 maj_paquet_detection: ""
 # 0 = fichier present (reboot requis), 1 = absent. Tout autre code est anormal.
 maj_rc_attendus: [0, 1]
+
+# Disque sur lequel grub-pc doit reinstaller GRUB.
+#
+# A chaque mise a jour, grub-pc redemande sur quels disques s'installer. La box
+# bento/debian-13 est livree SANS reponse enregistree (grub-pc/install_devices
+# vide, install_devices_failed_upgrade a true) : en mode non interactif la
+# question ne peut pas etre posee, et la mise a jour complete echoue.
+#
+# La valeur se releve sur la machine avec :
+#   lsblk -no PKNAME "$(findmnt -no SOURCE /boot)"
+# Les VMs du lab ont toutes un disque SATA unique.
+maj_disque_amorcage: /dev/sda
