@@ -64,7 +64,7 @@ Chaque stagiaire dispose d'un poste Ubuntu 26.04 LTS avec VirtualBox et Vagrant.
 
 Les trois VMs du cluster k3s sont déclarées `autostart: false` : `vagrant up` ne démarre que le lab J1/J2 (4 VMs, environ 6 Go). Le cluster est monté au jour 3 par `vagrant up k3s-master k3s-node01 k3s-node02` (3 VMs, environ 5 Go). Un troisième worker est disponible en commentaire dans le `Vagrantfile` pour les postes disposant de 32 Go.
 
-Réseau host-only `192.168.56.0/24`. La résolution de noms est assurée par un `/etc/hosts` généré par Ansible (TP 03). Le lab réseau du module 14 n'utilise pas de VM : il repose sur les modes hors ligne `parsed` / `rendered` et sur une démonstration formateur.
+Réseau host-only `192.168.56.0/24`. La résolution de noms est assurée par un `/etc/hosts` généré par Ansible (TP 03). Le lab réseau du module 14 **utilise une VM** : le routeur VyOS `net01`, piloté en `network_cli` (validé contre l'équipement réel). En revanche, **aucun hyperviseur Proxmox ni vSphere n'est fourni** : le module 13 est théorique et ne comporte pas de démonstration sur infrastructure réelle.
 ### 3.2 Choix techniques et points d'attention (vérifiés septembre 2026)
 
 - **Ansible :** cible **ansible-core 2.21.4 / Ansible 14.4**, installé via trois commandes `pipx` à versions figées (`ansible==14.4.*`, `ansible-lint==26.8.*`, `molecule==26.8.*`). `ansible-builder` et `ansible-navigator` s'ajoutent au module 10, `ansible-dev-tools` restant une alternative tout-en-un non retenue. Les dépôts Ubuntu 26.04 (core 2.20.1), Debian 13 (core 2.19.4, EOL 30 nov. 2026) et Rocky 10 (core 2.16.16, EOL upstream mais maintenu par RHEL 10) sont volontairement écartés pour le nœud de contrôle. Python contrôleur : 3.12–3.14 (Ubuntu 26.04 fournit 3.14). Python cibles : 3.9–3.14 (Debian 13 : 3.13 ; Rocky 10 : 3.12).
@@ -79,7 +79,9 @@ Réseau host-only `192.168.56.0/24`. La résolution de noms est assurée par un 
 ### 3.3 Kit formateur (à préparer avant J1)
 - Dépôt de boxes local et miroir de collections / images conteneur.
 - Dépôt Git de référence (`formation-ansible`) avec les branches par TP, hébergé sur une instance GitLab CE ou Gitea locale (ou GitHub si Internet fiable).
-- Instance de démo : Semaphore UI pré-installé, AWX sur k3s (démo J2), accès lecture à un Proxmox VE 9.x de démo et captures vSphere 9.x (démo J3), lab Containerlab (SR Linux + FRR) sur le poste formateur pour la partie réseau.
+- Instance de démo : Semaphore UI (installé par le TP 11 sur la VM `tools`), AWX sur k3s (démo J2 facultative).
+- **Proxmox et vSphere : rien à préparer, la partie est théorique.** Aucun accès à un hyperviseur n'est requis ni prévu. Des captures d'écran commentées suffisent ; à défaut, la lecture du code des corrigés est l'exercice.
+- Partie réseau : **pas de Containerlab**, le routeur VyOS `net01` du `Vagrantfile` suffit et a été validé.
 - Support de cours (slides), fiches mémo (cheat sheets) : CLI, structure de projet, profils ansible-lint, états des resource modules.
 
 ---
@@ -233,7 +235,7 @@ Fil conducteur : un projet Git unique `formation-ansible` que les stagiaires fon
 
 ## 7. Jour 3 — Provisioning, réseau, Kubernetes, évolutions 2026 et clôture
 
-> Journée majoritairement théorique et démonstrative, avec un TP Kubernetes sur k3s réalisable dans le lab. Les parties Proxmox / VMware / réseau s'appuient sur des démos formateur et des exercices « hors ligne » (rendu de configuration sans équipement).
+> Journée mixte. Le TP Kubernetes (k3s) et le TP réseau (routeur VyOS) sont **réalisables dans le lab** et ont été validés contre les machines réelles. La partie **Proxmox / VMware reste théorique** : aucun hyperviseur n'est fourni, et il n'y a pas de démonstration sur infrastructure réelle — l'exercice se limite à l'écriture et à la validation statique du code.
 
 ### Module 3.1 — Provisioning d'infrastructure avec Ansible (9h00–10h45, 105 min)
 
@@ -248,7 +250,7 @@ Fil conducteur : un projet Git unique `formation-ansible` que les stagiaires fon
 - Collection **`community.proxmox` 2.0** (scission de `community.general` en 2025, redirections dépréciées) : `proxmox_kvm` (création, clonage de template, cloud-init : `ciuser`, `sshkeys`, `ipconfig`, `cicustom`), `proxmox` (LXC), `proxmox_vm_info`, `proxmox_template`, `proxmox_disk`, `proxmox_nic`, `proxmox_snap`, `proxmox_backup`, SDN, firewall, HA. Pré-requis `proxmoxer ≥ 2.3`, `validate_certs: true` par défaut.
 - Inventaire dynamique `community.proxmox.proxmox` : `keyed_groups` par tags / pool / nœud, `want_facts`, filtres ; plugins de connexion `proxmox_pct_remote` et `proxmox_qemu_api`.
 - Chaîne complète : template cloud-init Debian 13 → clone → personnalisation → attente SSH → inventaire dynamique → playbook de configuration.
-- **Démo formateur** sur Proxmox de démo ; **exercice hors ligne** : écrire le playbook de création d'une VM et son `inventory.proxmox.yml`, validé par `ansible-lint` et `--syntax-check`.
+- **Pas de démo sur infrastructure réelle** (aucun Proxmox fourni). **Exercice hors ligne** : écrire le playbook de création d'une VM et son `inventory.proxmox.yml`, validé par `ansible-lint` et `--syntax-check`. Commenter des captures d'écran de l'interface Proxmox si l'on veut illustrer.
 
 **3.1.c VMware vSphere (30 min, théorie)**
 - vSphere 9.1 (Broadcom, VCF 9) et paysage des collections : **`vmware.vmware` 2.10** (certifiée, socle actuel : `vm`, `deploy_folder_template`, `deploy_content_library_template`, `vm_apply_customization`, `vm_snapshot`, inventaires `vms` / `esxi_hosts`), **`community.vmware` 6.x** (dépend de `vmware.vmware`, SDK `vcf-sdk` remplace pyvmomi, `vmware_guest` encore la voie la plus complète pour clone + customisation, `vmware_vm_inventory` **déprécié** → migrer vers `vmware.vmware.vms`), `vmware.vmware_rest` (REST, en retrait).

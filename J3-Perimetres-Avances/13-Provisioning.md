@@ -1,7 +1,20 @@
 # Module 13 — Provisioning : Proxmox, VMware et Terraform
 
-> **Jour 3** · 105 min · Théorie + démonstration + **TP 12**
+> **Jour 3** · 105 min · Théorie + lecture de code + **TP 12**
 > Prérequis : [module 12](../J2-Industrialisation/12-WebUI.md).
+
+> **Ce module est théorique. Aucun Proxmox ni vCenter n'est fourni avec la formation.**
+>
+> Le lab n'en comporte pas, et il n'y a **pas de démonstration sur infrastructure réelle**. Le
+> code des corrigés n'a jamais été exécuté contre un hyperviseur : il est validé par
+> `--syntax-check`, par `ansible-lint` au profil production, et par le chargement effectif des
+> greffons d'inventaire — jusqu'à la tentative de connexion réseau, qui est le dernier point
+> atteignable sans matériel.
+>
+> Ce qui est enseigné ici, ce sont les **modèles** : authentification par jeton, machines
+> décrites comme données, tags de l'hyperviseur devenus groupes d'inventaire, enchaînement
+> création → configuration. Ils se transposent tels quels sur une infrastructure existante,
+> mais leur exécution reste à la charge du stagiaire, chez lui.
 
 ## Objectifs
 
@@ -249,8 +262,9 @@ avec les mêmes rôles que ceux utilisés ensuite pour la configuration.
 
 ### Objectif
 
-Écrire et valider le code de provisionnement, sans Proxmox ni vCenter. L'objectif est la
-structure et la validation statique, pas l'exécution.
+Écrire et valider le code de provisionnement, **sans Proxmox ni vCenter** : ni le lab ni le
+formateur n'en disposent. L'objectif est la structure et la validation statique, pas
+l'exécution. Aucune VM ne sera créée pendant ce TP.
 
 ### Énoncé
 
@@ -299,8 +313,9 @@ structure et la validation statique, pas l'exécution.
 
 ### Pour aller plus loin
 
-- Démonstration formateur sur un Proxmox réel : cycle complet création, configuration,
-  destruction.
+- Sur un Proxmox auquel vous avez accès **en dehors de la formation** : dérouler le cycle
+  complet création, configuration, destruction. C'est le prolongement naturel de ce TP, mais il
+  sort du périmètre de la session.
 - Écrire le `main.tf` équivalent et comparer avec le playbook.
 - Lire un `terraform.tfstate` avec le greffon `cloud.terraform.terraform_state`.
 

@@ -1,5 +1,13 @@
 # TP 12 — Provisionner sans infrastructure
 
+> **Ce TP est théorique. Aucun Proxmox ni vCenter n'est fourni avec la formation, et il n'y a
+> pas de démonstration sur infrastructure réelle.**
+>
+> Le code ci-dessous n'a **jamais été exécuté contre un hyperviseur**. Ce qui a été vérifié est
+> décrit en fin de fichier. Ce qui est enseigné, ce sont les modèles — authentification par
+> jeton, machines décrites comme données, tags devenus groupes, enchaînement création →
+> configuration — qui se transposent tels quels sur une infrastructure existante.
+
 Énoncé : [module 13](../../J3-Perimetres-Avances/13-Provisioning.md#tp-12--provisionner-sans-infrastructure)
 
 ## Contenu
