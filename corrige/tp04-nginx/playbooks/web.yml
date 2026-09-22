@@ -47,6 +47,18 @@
 
   tasks:
 
+    # La box Debian est EPINGLEE a une version : son cache apt vieillit, et
+    # Debian retire du miroir les .deb rendus obsoletes par un point release.
+    # Sans ce rafraichissement, l'installation echoue en 404 :
+    #   E: Failed to fetch .../nginx_1.26.3-3+deb13u1_amd64.deb  404  Not Found
+    # `changed_when: false` : rafraichir un cache n'est pas un changement
+    # d'etat de la machine, et le rapporter casserait le test d'idempotence.
+    - name: Rafraichir le cache de paquets
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+      changed_when: false
+
     - name: Installer nginx
       ansible.builtin.package:
         name: nginx
