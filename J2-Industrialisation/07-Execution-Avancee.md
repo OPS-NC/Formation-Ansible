@@ -275,10 +275,15 @@ Dans un `block` :
    `web`). **Ce fichier est un témoin** : aucun répartiteur du lab ne le consulte. En production,
    il faut le relier à la sonde de santé pour que la sortie de rotation soit réelle.
 2. Mettre à jour **tous** les paquets.
-3. Déterminer si un redémarrage est nécessaire. Le mécanisme diffère : fichier témoin
-   `/var/run/reboot-required` sur Debian, code retour de `dnf needs-restarting -r` sur Rocky.
-   Porter la commande **et le code retour attendu** dans les variables de groupe, puis normaliser
-   le résultat dans une variable unique.
+3. Déterminer si un redémarrage est nécessaire. Le mécanisme diffère : comparaison du noyau
+   en cours d'exécution au plus récent noyau installé sur Debian, code retour de
+   `dnf needs-restarting -r` sur Rocky. Porter la commande **et le code retour attendu** dans
+   les variables de groupe, puis normaliser le résultat dans une variable unique.
+
+   > **Attention** — `/var/run/reboot-required` est un mécanisme **Ubuntu**. Il est déposé par
+   > le crochet apt de `update-notifier-common`, paquet qui n'existe pas dans Debian 13 : sur
+   > `bento/debian-13` ce fichier n'apparaît jamais et le test répondrait toujours « aucun
+   > redémarrage nécessaire ».
 4. Redémarrer si nécessaire, et attendre le retour de la machine.
 5. Vérifier que le service web répond, avec `until` / `retries`.
 

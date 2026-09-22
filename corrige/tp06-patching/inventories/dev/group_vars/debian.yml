@@ -1,11 +1,31 @@
 ---
 # Surcharge du TP 02 : elements propres au patching Debian.
-# Debian depose un fichier temoin quand un redemarrage est requis.
-maj_commande_reboot: "/usr/bin/test -f /var/run/reboot-required"
-maj_rc_reboot_requis: 0
-# `test` fait partie de coreutils : aucun paquet a installer.
+#
+# ATTENTION - /var/run/reboot-required est un mecanisme UBUNTU. Ce fichier est
+# depose par le crochet apt du paquet `update-notifier-common`, qui n'existe
+# PAS dans Debian 13 :
+#
+#   $ apt-cache policy update-notifier-common
+#   update-notifier-common:
+#     Installed: (none)
+#     Candidate: (none)
+#
+# Verifie sur bento/debian-13 : aucun crochet de /etc/apt/apt.conf.d ni de
+# /etc/kernel ne mentionne reboot-required. Tester la presence de ce fichier
+# repondait donc TOUJOURS "aucun redemarrage necessaire", quel que soit le
+# noyau installe : la branche Debian du TP ne se declenchait jamais.
+#
+# Le test natif Debian compare le noyau EN COURS D'EXECUTION au plus recent
+# noyau INSTALLE. `linux-version` vient de `linux-base`, present sur toute
+# installation Debian : aucun paquet a installer, d'ou maj_paquet_detection
+# vide.
+#   rc 0 : les deux coincident -> aucun redemarrage necessaire
+#   rc 1 : ils different       -> redemarrage necessaire
+maj_commande_reboot: >-
+  /bin/sh -c 'test "$(uname -r)" = "$(linux-version list | linux-version sort --reverse | head -1)"'
+maj_rc_reboot_requis: 1
 maj_paquet_detection: ""
-# 0 = fichier present (reboot requis), 1 = absent. Tout autre code est anormal.
+# 0 = noyau a jour, 1 = redemarrage requis. Tout autre code est anormal.
 maj_rc_attendus: [0, 1]
 
 # Disque sur lequel grub-pc doit reinstaller GRUB.

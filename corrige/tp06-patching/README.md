@@ -65,12 +65,50 @@ normalise le résultat dans une variable unique.
 
 | Famille | Commande | Code retour signifiant « redémarrage requis » |
 |---|---|---|
-| Debian | `test -f /var/run/reboot-required` | 0 |
+| Debian | comparaison noyau courant / plus récent noyau installé | 1 |
 | RHEL / Rocky | `dnf needs-restarting -r` | 1 |
 
-> Vérifié dans les dépôts Rocky 10 : `needs-restarting` est fourni par **`dnf-plugins-core`**
-> (BaseOS). Rocky 10 est resté sur **DNF4** ; ni `dnf5` ni `python3-libdnf5` n'y sont
-> distribués. Le playbook installe donc ce paquet avant d'appeler la commande.
+> **`/var/run/reboot-required` est un mécanisme Ubuntu, pas Debian.** Ce fichier est déposé
+> par le crochet apt du paquet `update-notifier-common`, **absent de Debian 13** :
+>
+> ```console
+> $ apt-cache policy update-notifier-common
+> update-notifier-common:
+>   Installed: (none)
+>   Candidate: (none)
+> ```
+>
+> Vérifié sur `bento/debian-13` : aucun crochet de `/etc/apt/apt.conf.d` ni de `/etc/kernel`
+> ne mentionne `reboot-required`, et le fichier n'apparaît jamais. Tester sa présence
+> répondait donc **toujours** « aucun redémarrage nécessaire » : la branche Debian du TP ne se
+> déclenchait jamais, quel que soit le noyau installé.
+>
+> Le test retenu compare le noyau **en cours d'exécution** au plus récent noyau **installé**,
+> via `linux-version` (paquet `linux-base`, présent sur toute installation Debian). Il ne
+> couvre que le noyau, c'est-à-dire précisément ce qui impose un *redémarrage* ; les services
+> à *redémarrer* sont une autre question, à laquelle répond `needrestart`.
+
+> Vérifié sur Rocky 10 : le sous-commande `dnf needs-restarting` vient de
+> **`python3-dnf-plugins-core`**, tiré par `dnf-plugins-core` (BaseOS) — déjà présent dans la
+> box `bento/rockylinux-10`. Attention, le binaire autonome `/usr/bin/needs-restarting` est lui
+> fourni par `yum-utils` : ce n'est pas le même chemin d'appel. Rocky 10 est resté sur **DNF4** ;
+> ni `dnf5` ni `python3-libdnf5` n'y sont distribués.
+
+## Le paquet qui pose une question
+
+`grub-pc` redemande son disque d'installation à chaque mise à jour. La box `bento/debian-13`
+est livrée **sans réponse enregistrée** (`grub-pc/install_devices` vide,
+`grub-pc/install_devices_failed_upgrade` à `true`). En mode non interactif la question ne peut
+pas être posée, et la mise à jour complète s'arrête :
+
+```
+You must correct your GRUB install devices before proceeding
+dpkg: error processing package grub-pc (--configure)
+E: Sub-process /usr/bin/dpkg returned an error code (1)
+```
+
+Le playbook enregistre la réponse dans debconf **avant** la mise à jour. Le disque est porté
+par `maj_disque_amorcage` dans `group_vars/debian.yml`, comme toute différence de parc.
 
 ## Le paquet qui pose une question
 
