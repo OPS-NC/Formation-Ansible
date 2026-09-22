@@ -14,6 +14,14 @@ ansible:
     defaults:
       deprecation_warnings: false
       callback_result_format: yaml
+      # INDISPENSABLE. Molecule genere son propre ansible.cfg dans un repertoire
+      # ephemere et lance ansible-playbook depuis celui-ci : le `roles_path` de
+      # l'ansible.cfg du projet, dont les chemins sont RELATIFS, n'y est pas
+      # resolvable. Sans cette ligne, `molecule converge` echoue sur
+      #   [ERROR]: The role 'nginx' was not found in: ...
+      # Le chemin remonte du scenario (roles/nginx/molecule/default) jusqu'au
+      # repertoire qui CONTIENT le role (roles/).
+      roles_path: ${MOLECULE_SCENARIO_DIRECTORY}/../../..
   executor:
     backend: ansible-playbook
     args:
