@@ -389,7 +389,7 @@ Disposer d'un nœud de contrôle fonctionnel et joindre les quatre VMs du jour 1
 
 ```console
 $ ansible all -m ansible.builtin.ping
-web01 | SUCCESS => 
+web01 | SUCCESS =>
     ansible_facts:
         discovered_interpreter_python: /usr/bin/python3.13
     changed: false

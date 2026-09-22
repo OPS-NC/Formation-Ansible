@@ -15,6 +15,10 @@ rules:
   # `yes`/`no`/`on`/`off` sont refuses : on ecrit true/false.
   truthy:
     allowed-values: ["true", "false"]
+    # Les CLES ne sont pas controlees : `on:` est la syntaxe imposee par
+    # GitHub Actions pour declarer les declencheurs d'un workflow. Sans cela,
+    # yamllint refuse tout fichier .github/workflows/*.yml.
+    check-keys: false
 
   comments:
     min-spaces-from-content: 1
@@ -30,3 +34,8 @@ rules:
 ignore: |
   .vagrant/
   collections/
+  # Les fichiers chiffres par ansible-vault ne sont pas du YAML : ils
+  # commencent par l'en-tete $ANSIBLE_VAULT et yamllint y reclamerait un
+  # document-start `---` impossible a ajouter.
+  **/vault.yml
+  facts_cache/

@@ -429,13 +429,13 @@ parc par commandes ad hoc.
 
 ```console
 $ ansible all -m ansible.builtin.debug -a "var=banniere"
-web01 | SUCCESS => 
+web01 | SUCCESS =>
     banniere: web01 - frontal principal
-web02 | SUCCESS => 
+web02 | SUCCESS =>
     banniere: Serveur web - lab formation
-db01 | SUCCESS => 
+db01 | SUCCESS =>
     banniere: Serveur de base de donnees - lab formation
-tools | SUCCESS => 
+tools | SUCCESS =>
     banniere: Machine du lab - usage formation
 ```
 
