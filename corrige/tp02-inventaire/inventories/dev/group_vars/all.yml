@@ -1,0 +1,14 @@
+---
+# Variables communes a tout l'inventaire.
+# Precedence : c'est le niveau le PLUS FAIBLE des group_vars.
+
+ansible_user: vagrant
+ansible_ssh_private_key_file: ".vagrant/machines/{{ inventory_hostname }}/virtualbox/private_key"
+
+# Identite du parc, reutilisee par les playbooks des TP suivants.
+parc_environnement: dev
+parc_domaine: lab.local
+parc_timezone: Pacific/Noumea
+
+# Valeur volontairement redefinie plus bas, pour observer la precedence.
+banniere: "Machine du lab - usage formation"

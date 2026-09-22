@@ -1,0 +1,5 @@
+---
+# Variables du groupe fonctionnel `db`.
+postgresql_port: 5432
+postgresql_base: formation
+banniere: "Serveur de base de donnees - lab formation"
