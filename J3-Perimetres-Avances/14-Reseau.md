@@ -286,13 +286,47 @@ ssh-keyscan 192.168.56.51 >> ~/.ssh/known_hosts
 4. **Comparer les états** : appliquer la même configuration en `merged`, puis en `overridden`,
    en `--check --diff` à chaque fois. Observer ce que le second supprimerait.
 
+   > **Attention** — sur un lab fraîchement monté, les deux états produisent **exactement les
+   > mêmes commandes** : `overridden` ne supprime que ce qui existe **hors** de la configuration
+   > fournie, et il n'y a rien. L'exercice ne démontre alors rien. Posez d'abord un attribut sur
+   > une interface absente de `interfaces_cibles` :
+   >
+   > ```yaml
+   > - name: Description temoin sur eth0
+   >   vyos.vyos.vyos_interfaces:
+   >     config:
+   >       - name: eth0
+   >         description: Interface NAT hors perimetre
+   >     state: merged
+   > ```
+   >
+   > La comparaison devient alors parlante :
+   >
+   > ```yaml
+   > merged:
+   >   - set interfaces ethernet eth1 description 'Reseau de lab'
+   >   - set interfaces ethernet eth2 description 'Reseau applicatif'
+   > overridden:
+   >   - delete interfaces ethernet eth0 description      # <- la difference
+   >   - set interfaces ethernet eth1 description 'Reseau de lab'
+   >   - set interfaces ethernet eth2 description 'Reseau applicatif'
+   > ```
+
 5. **Hors ligne** (`03-hors-ligne.yml`) :
    - analyser un `show ip interface brief` stocké dans un fichier avec `cli_parse` et
      `ntc_templates` ;
    - en extraire la liste des interfaces actives.
 
 6. **Constater la limite** : tenter un `vyos_interfaces` avec `state: rendered` en
-   `connection: local`, et lire le message de refus.
+   `connection: local`, et lire le message de refus
+   (`Connection type local is not valid for this module`). Puis refaire l'essai en déclarant
+   `ansible_connection: ansible.netcommon.network_cli` sur un hôte **injoignable** : le rendu
+   aboutit en une seconde, sans session SSH. La contrainte porte donc sur le **type de
+   connexion déclaré**, pas sur l'existence de l'équipement.
+
+   > **Attention** — une variable d'inventaire `ansible_connection` l'emporte sur le mot-clé
+   > `connection:` du play. Pour que le premier essai échoue vraiment, l'hôte utilisé ne doit
+   > pas porter `ansible_connection: network_cli` dans l'inventaire.
 
 ### Résultat attendu
 

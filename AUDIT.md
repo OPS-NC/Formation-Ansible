@@ -3,6 +3,9 @@
 Validation en conditions réelles du 22 septembre 2026, sur le poste Ubuntu 26.04 de référence.
 **Les 14 TP ont été exécutés**, sur de vraies machines virtuelles, jusqu'au test d'idempotence.
 
+Deux passes : les **corrigés** (§3), puis les **étapes d'énoncé sans playbook** (§3.3) — celles
+que le formateur joue en direct, et qui avaient échappé à la première passe.
+
 Ce fichier remplace l'audit statique précédent, dont tous les points ouverts sont tranchés
 plus bas (§5).
 
@@ -84,7 +87,7 @@ dont environ 1 min de téléchargement de la box Rocky.
 
 ## 3. Bugs rencontrés et corrigés
 
-**27 commits**, un par correction. Tous vérifiés avant commit : `ansible-lint` au profil
+**32 commits**, un par correction. Tous vérifiés avant commit : `ansible-lint` au profil
 production, `--syntax-check`, puis exécution réelle.
 
 ### Bloquants — le TP ne pouvait pas aboutir
@@ -159,16 +162,75 @@ suivent désormais le module 04, avec un renvoi vers son explication.
 
 ---
 
+## 3.3 Étapes d'énoncé sans playbook dans le corrigé
+
+Première passe de validation : les **corrigés**. Seconde passe : les étapes d'énoncé qui
+demandent une manipulation sans fichier correspondant — celles que le formateur joue en direct.
+Cinq d'entre elles n'avaient jamais été exécutées.
+
+| Étape | Résultat |
+|---|---|
+| TP 08 §7 — provoquer un échec d'idempotence | **conforme** — une tâche `command` nue ajoutée au rôle fait échouer Molecule : `CRITICAL Idempotence test failed because of the following tasks`. Le tag d'exemption est `molecule-idempotence-notest`. |
+| TP 09 §5 — exécuter le fil rouge dans l'EE | **conforme** via `ansible-navigator` : `changed=0` sur les 4 VM. Voir la réserve ci-dessous. |
+| TP 09 §6 — retirer une collection du fichier | **conforme** — l'EE se construit toujours, mais le fil rouge échoue en `rc=4` : `couldn't resolve module/action 'community.postgresql.postgresql_user'`. |
+| TP 10 §8 — `ansible-vault rekey` | **conforme** — `Rekey successful`, l'identifiant `dev` reste inscrit dans l'en-tête, l'ancien mot de passe est rejeté (`rc=1`). |
+| TP 13 §4 — comparer `merged` et `overridden` | **l'exercice ne démontrait rien** — voir ci-dessous. |
+
+**TP 13 §4.** Sur un lab fraîchement monté, les deux états produisent des commandes
+**identiques** : `overridden` ne supprime que ce qui existe hors de la configuration fournie, et
+il n'y a rien. L'énoncé demandait pourtant d'« observer ce que le second supprimerait ». Il faut
+d'abord poser un attribut hors périmètre ; la différence apparaît alors :
+
+```yaml
+overridden:
+  - delete interfaces ethernet eth0 description      # <- absent de merged
+```
+
+L'énoncé porte désormais l'étape préparatoire.
+
+**TP 09 §5 — réserve sur la commande documentée.** Telle qu'écrite dans le README
+(`ansible-navigator run site.yml --eei formation-ee:1.0 -m stdout`), la commande sort en
+**exit 0 sans rien exécuter** quand on la lance sur le corrigé : l'`ansible.cfg` du dépôt pointe
+vers l'inventaire du *stagiaire*, absent. Il faut ajouter `-i`. Un exit 0 qui n'exécute rien est
+un piège. Par ailleurs, lancer l'EE avec `podman run` **brut** ne fonctionne pas sans travail
+supplémentaire : l'uid du conteneur ne peut pas lire les clés Vagrant
+(`Load key ... Permission denied`), là où `ansible-navigator` gère ce montage.
+
+## 3.4 Une affirmation du corrigé infirmée : les états hors ligne
+
+Le TP 13 affirmait que `rendered` et `parsed` sont inutilisables sans équipement, avec ce
+tableau :
+
+| Tentative | Résultat annoncé |
+|---|---|
+| `connection: local` | `Connection type local is not valid for this module` |
+| `ansible_connection: network_cli` | `ssh connect failed: Timeout connecting to ...` |
+
+**La première ligne est exacte, la seconde est fausse.** Mesuré avec `vyos.vyos` 6.0 sur
+`ansible-core` 2.21, contre `203.0.113.254` (TEST-NET-3, injoignable) : `rendered` aboutit en
+**1,1 s**, sans ouvrir de session SSH, et retourne les bonnes commandes.
+
+La contrainte porte donc sur le **type de connexion déclaré**, pas sur l'existence de
+l'équipement : il suffit de déclarer `network_cli`.
+
+Le piège qui a probablement produit l'affirmation d'origine — et dans lequel je suis tombé au
+premier essai : une variable d'inventaire `ansible_connection` **l'emporte** sur le mot-clé
+`connection:` du play. Un play déclarant `connection: local` sur un hôte dont l'inventaire porte
+`ansible_connection: network_cli` utilise en réalité `network_cli`. On croit tester le mode
+local alors qu'on parle à l'équipement, et on en tire la conclusion inverse.
+
+---
+
 ## 4. Ce qui n'a pas pu être testé
 
 | Sujet | TP | Raison |
 |---|---|---|
 | Provisioning Proxmox et vSphere réel | 12 | aucune infrastructure disponible |
 | Molecule dans un exécuteur de CI | 09 | aucun exécuteur GitLab ni GitHub self-hosted |
-| `ansible-navigator run --eei` | 09 | l'image est construite, son exécution n'a pas été jouée |
+| Molecule en exécuteur de CI conteneurisé | 09 | conteneurs imbriqués, aucun exécuteur disponible |
 | Usage de l'interface Semaphore | 11 | création de projet, clés, tâches, webhook : manipulation en salle |
 | NetBox comme source de vérité | 13 | aucune instance NetBox |
-| États `rendered` / `parsed` hors ligne | 13 | limite déjà documentée dans le corrigé, non ré-éprouvée |
+| `parsed` hors ligne | 13 | seul `rendered` a été éprouvé (§3.4) |
 | Modules `ansible.windows` | 16 | aucune cible Windows ; module sans TP |
 | `ansible-rulebook` / EDA | 16 | module sans TP |
 

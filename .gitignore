@@ -36,6 +36,12 @@ rapport-patching.json
 # Contexte de construction genere par `ansible-builder build` (TP 09).
 context/
 
+# Artefacts de run deposes par ansible-navigator dans le repertoire courant.
+*-artifact-*.json
+
+# Repertoire cree par un montage de $HOME dans un conteneur (EE, TP 09).
+.ssh/
+
 # Artefacts produits par le TP 13 (relecture et sauvegardes du routeur).
 corrige/tp13-reseau/fixtures/interfaces-existantes.yml
 corrige/tp13-reseau/fixtures/sauvegardes/

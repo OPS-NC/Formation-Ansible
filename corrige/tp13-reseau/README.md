@@ -84,23 +84,38 @@ Le modèle de données produit par `cli_parse` :
 
 ## La limite des états dits « hors ligne »
 
-`rendered` et `parsed` sont documentés comme des traitements hors ligne, et le **module** l'est
-effectivement. Le blocage vient de son **greffon d'action** et du greffon de connexion. Constat
-reproduit avec `cisco.ios` 11.5 et `vyos.vyos` 6.0 sur `ansible-core` 2.21 ; à revérifier pour
-une autre combinaison :
+`rendered` et `parsed` sont documentés comme des traitements hors ligne. **Mesuré** avec
+`vyos.vyos` 6.0 sur `ansible-core` 2.21, contre une adresse volontairement injoignable
+(`203.0.113.254`, TEST-NET-3) :
 
 | Tentative | Résultat |
 |---|---|
-| `connection: local` | `Connection type local is not valid for this module` |
-| `ansible_connection: network_cli` | `ssh connect failed: Timeout connecting to ...` |
+| `connection: local` | **échoue** : `Connection type local is not valid for this module` |
+| `ansible_connection: ansible.netcommon.network_cli` | **fonctionne** : rendu en 1,1 s, sans ouvrir de session SSH |
 
-La cause est double : le greffon d'action des collections réseau refuse toute connexion autre que
-`network_cli` depuis `cisco.ios` 4.0.0, et `network_cli` déclare `force_persistence`, ce qui
-amène ansible-core à ouvrir la session SSH **avant** l'exécution du module. Le module, lui, ne
-demande pas la connexion pour ces deux états.
+```console
+$ ansible-playbook -i inventaire-injoignable.yml rendered.yml
+TASK [vyos_interfaces state rendered]
+ok: [fantome]
+    r.rendered:
+    - set interfaces ethernet eth1 description 'Aucun equipement'
+    - set interfaces ethernet eth2 description 'Reseau applicatif'
+fantome : ok=1 changed=0 unreachable=0 failed=0
+```
 
-Conséquence pratique : pour travailler sans équipement, utilisez `cli_parse` avec `text:`,
-comme le fait `03-hors-ligne.yml`.
+Autrement dit, la contrainte n'est **pas** qu'il faille un équipement : c'est que le greffon
+d'action des collections réseau refuse toute connexion autre que `network_cli`. Il suffit donc
+de **déclarer** `network_cli` — l'équipement, lui, n'a pas besoin d'exister.
+
+> **Attention au piège de précédence.** Une variable d'inventaire `ansible_connection` l'emporte
+> sur le mot-clé `connection:` du play. Un play qui déclare `connection: local` sur un hôte dont
+> l'inventaire porte `ansible_connection: network_cli` utilise en réalité **`network_cli`** : on
+> croit alors tester le mode local alors qu'on parle à l'équipement. C'est exactement ainsi qu'on
+> conclut à tort que `rendered` exige une machine joignable.
+
+Conséquence pratique : `rendered` est utilisable hors ligne pour vérifier ce qu'un modèle de
+données produirait. Pour analyser une sortie CLI existante, `cli_parse` avec `text:` reste la
+bonne voie, comme le fait `03-hors-ligne.yml`.
 
 ## Pourquoi VyOS
 
