@@ -1,0 +1,4 @@
+---
+base_admin_user: ansible
+base_admin_pubkey_path: "{{ lookup('ansible.builtin.env', 'HOME') }}/.ssh/id_ed25519.pub"
+base_gerer_hosts: true

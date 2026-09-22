@@ -1,0 +1,22 @@
+---
+galaxy_info:
+  role_name: nginx
+  namespace: formation
+  author: Formation Ansible
+  description: Deploiement de sites nginx pilote par les donnees
+  license: MIT
+  min_ansible_version: "2.16"
+  platforms:
+    - name: Debian
+      versions:
+        - trixie
+    - name: EL
+      versions:
+        - "10"
+  galaxy_tags:
+    - web
+    - nginx
+
+# Roles executes AVANT celui-ci. A utiliser avec parcimonie : une dependance
+# implicite est plus difficile a suivre qu'un appel explicite dans le playbook.
+dependencies: []

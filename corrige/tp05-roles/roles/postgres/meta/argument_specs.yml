@@ -1,0 +1,57 @@
+---
+argument_specs:
+  main:
+    short_description: Installation de PostgreSQL 16 sur Rocky Linux 10
+    description:
+      - Installe le serveur, initialise le repertoire de donnees, cree bases et comptes.
+    options:
+      postgres_datadir:
+        type: path
+        default: /var/lib/pgsql/data
+        description: Repertoire de donnees PostgreSQL.
+      postgres_port:
+        type: int
+        default: 5432
+        description: Port d ecoute du serveur.
+      postgres_bases:
+        type: list
+        elements: dict
+        default: []
+        description: Bases de donnees a creer.
+        options:
+          nom:
+            type: str
+            required: true
+            description: Nom de la base.
+          proprietaire:
+            type: str
+            description: Compte proprietaire de la base.
+          encodage:
+            type: str
+            default: UTF8
+            description: Encodage de la base.
+      postgres_comptes:
+        type: list
+        elements: dict
+        default: []
+        description: Comptes applicatifs a creer.
+        options:
+          nom:
+            type: str
+            required: true
+            description: Nom du role PostgreSQL.
+          mot_de_passe:
+            type: str
+            required: true
+            description: Mot de passe, chiffre au module 11.
+          base:
+            type: str
+            description: Base sur laquelle accorder les privileges.
+          privileges:
+            type: str
+            default: ALL
+            description: Privileges accordes sur la base.
+      postgres_ouvrir_firewall:
+        type: bool
+        default: false
+        description: Ouvrir le port PostgreSQL dans firewalld.

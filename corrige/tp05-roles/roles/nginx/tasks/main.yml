@@ -1,0 +1,92 @@
+---
+# Role nginx - taches principales.
+# Les chemins dependant de la distribution sont lus dans vars/main.yml,
+# indexes par ansible_facts['os_family'].
+
+- name: Selectionner les chemins propres a la distribution
+  ansible.builtin.set_fact:
+    nginx_conf: "{{ nginx_chemins[ansible_facts['os_family']] }}"
+
+- name: Installer nginx
+  ansible.builtin.package:
+    name: nginx
+    state: present
+
+- name: Activer nginx au demarrage
+  ansible.builtin.systemd_service:
+    name: nginx
+    state: started
+    enabled: true
+
+- name: Creer la racine documentaire de chaque site
+  ansible.builtin.file:
+    path: "{{ nginx_site_racine }}/{{ item.nom }}"
+    state: directory
+    owner: root
+    group: "{{ nginx_conf.utilisateur }}"
+    mode: "0755"
+  loop: "{{ nginx_sites }}"
+  loop_control:
+    label: "{{ item.nom }}"
+
+- name: Deposer la page d accueil de chaque site
+  ansible.builtin.template:
+    src: index.html.j2
+    dest: "{{ nginx_site_racine }}/{{ site.nom }}/index.html"
+    owner: root
+    group: "{{ nginx_conf.utilisateur }}"
+    mode: "0644"
+  loop: "{{ nginx_sites }}"
+  loop_control:
+    loop_var: site
+    label: "{{ site.nom }}"
+
+- name: Generer la configuration de chaque vhost
+  ansible.builtin.template:
+    src: vhost.conf.j2
+    dest: "{{ nginx_conf.disponibles }}/{{ site.nom }}.conf"
+    owner: root
+    group: root
+    mode: "0644"
+  loop: "{{ nginx_sites }}"
+  loop_control:
+    loop_var: site
+    label: "{{ site.nom }}"
+  notify: configuration nginx modifiee
+
+- name: Activer chaque vhost
+  ansible.builtin.file:
+    src: "{{ nginx_conf.disponibles }}/{{ site.nom }}.conf"
+    dest: "{{ nginx_conf.actives }}/{{ site.nom }}.conf"
+    state: link
+    owner: root
+    group: root
+  loop: "{{ nginx_sites }}"
+  loop_control:
+    loop_var: site
+    label: "{{ site.nom }}"
+  # Sur RedHat les deux repertoires sont confondus : le lien serait circulaire.
+  when: nginx_conf.disponibles != nginx_conf.actives
+  notify: configuration nginx modifiee
+
+- name: Supprimer le site livre par la distribution
+  ansible.builtin.file:
+    path: "{{ nginx_conf.site_defaut }}"
+    state: absent
+  when: nginx_supprimer_site_defaut | bool
+  notify: configuration nginx modifiee
+
+- name: Declencher les handlers en attente
+  ansible.builtin.meta: flush_handlers
+
+- name: Verifier que chaque site repond
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ site.port | default(nginx_port_defaut) }}/"
+    status_code: [200, 301]
+  loop: "{{ nginx_sites }}"
+  loop_control:
+    loop_var: site
+    label: "{{ site.nom }}"
+  when:
+    - nginx_verifier | bool
+    - not ansible_check_mode

@@ -1,0 +1,23 @@
+---
+# Rocky Linux 10 fournit PostgreSQL 16 sous le nom `postgresql-server`.
+# La modularite dnf a disparu en EL10 : les autres versions sont des paquets
+# prefixes (postgresql18-server), pas des streams.
+postgres_paquets:
+  - postgresql-server
+  - postgresql-contrib
+  # Requis par les modules community.postgresql (psycopg2 >= 2.5.1).
+  - python3-psycopg2
+  # Requis par les modules de fichiers d Ansible quand SELinux est actif,
+  # ce qui est le cas par defaut sur Rocky 10.
+  - python3-libselinux
+
+postgres_datadir: /var/lib/pgsql/data
+postgres_service: postgresql
+postgres_port: 5432
+
+# Bases et comptes a creer. Vides par defaut.
+postgres_bases: []
+postgres_comptes: []
+
+# Ouvrir le port dans firewalld, actif par defaut sur la box Rocky.
+postgres_ouvrir_firewall: false

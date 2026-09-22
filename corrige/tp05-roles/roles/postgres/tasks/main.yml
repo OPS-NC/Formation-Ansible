@@ -1,0 +1,74 @@
+---
+# Role postgres - PostgreSQL 16 sur Rocky Linux 10.
+
+- name: Installer PostgreSQL et ses dependances Python
+  ansible.builtin.package:
+    name: "{{ postgres_paquets }}"
+    state: present
+
+# `postgresql-setup --initdb` echoue si le repertoire est deja initialise.
+# `creates` rend la tache idempotente sans avoir a interpreter son code retour.
+- name: Initialiser le repertoire de donnees
+  ansible.builtin.command: /usr/bin/postgresql-setup --initdb
+  args:
+    creates: "{{ postgres_datadir }}/PG_VERSION"
+  notify: Redemarrer PostgreSQL
+
+- name: Activer et demarrer PostgreSQL
+  ansible.builtin.systemd_service:
+    name: "{{ postgres_service }}"
+    state: started
+    enabled: true
+
+- name: Declencher les handlers avant toute operation SQL
+  ansible.builtin.meta: flush_handlers
+
+- name: Creer les bases de donnees
+  community.postgresql.postgresql_db:
+    name: "{{ item.nom }}"
+    owner: "{{ item.proprietaire | default(omit) }}"
+    encoding: "{{ item.encodage | default('UTF8') }}"
+    state: present
+  become: true
+  become_user: postgres
+  loop: "{{ postgres_bases }}"
+  loop_control:
+    label: "{{ item.nom }}"
+  when: not ansible_check_mode
+
+- name: Creer les comptes applicatifs
+  community.postgresql.postgresql_user:
+    name: "{{ item.nom }}"
+    password: "{{ item.mot_de_passe }}"
+    state: present
+  become: true
+  become_user: postgres
+  loop: "{{ postgres_comptes }}"
+  loop_control:
+    label: "{{ item.nom }}"
+  no_log: true
+  when: not ansible_check_mode
+
+- name: Accorder les privileges sur les bases
+  community.postgresql.postgresql_privs:
+    login_db: "{{ item.base }}"
+    roles: "{{ item.nom }}"
+    privs: "{{ item.privileges | default('ALL') }}"
+    type: database
+    state: present
+  become: true
+  become_user: postgres
+  loop: "{{ postgres_comptes }}"
+  loop_control:
+    label: "{{ item.nom }} sur {{ item.base | default('-') }}"
+  when:
+    - item.base is defined
+    - not ansible_check_mode
+
+- name: Ouvrir le port PostgreSQL dans firewalld
+  ansible.posix.firewalld:
+    port: "{{ postgres_port }}/tcp"
+    permanent: true
+    immediate: true
+    state: enabled
+  when: postgres_ouvrir_firewall | bool

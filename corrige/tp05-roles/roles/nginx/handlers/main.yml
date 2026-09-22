@@ -1,0 +1,14 @@
+---
+# Les handlers s'executent dans l'ordre de DEFINITION ci-dessous, pas dans
+# l'ordre des notifications : le controle precede donc le rechargement.
+
+- name: Controler la configuration nginx
+  listen: configuration nginx modifiee
+  ansible.builtin.command: nginx -t
+  changed_when: false
+
+- name: Recharger nginx
+  listen: configuration nginx modifiee
+  ansible.builtin.systemd_service:
+    name: nginx
+    state: reloaded

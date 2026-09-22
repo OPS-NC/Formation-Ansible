@@ -1,0 +1,22 @@
+---
+# Valeurs par defaut du role nginx.
+#
+# `defaults/` est le niveau de precedence le PLUS FAIBLE : tout ce qui est ici
+# est prevu pour etre surcharge par l'inventaire, le play ou -e.
+# Ce qui ne doit PAS l'etre va dans `vars/`.
+
+# Liste des sites a deployer. Vide par defaut : le role ne fait rien d'utile
+# tant que l'appelant n'a pas fourni ses donnees.
+nginx_sites: []
+
+# Emplacement des racines documentaires.
+nginx_site_racine: /var/www/formation
+
+# Port par defaut, utilise quand un site n'en precise pas.
+nginx_port_defaut: 80
+
+# Supprimer le site livre par la distribution.
+nginx_supprimer_site_defaut: true
+
+# Verifier que chaque site repond en fin de role.
+nginx_verifier: true

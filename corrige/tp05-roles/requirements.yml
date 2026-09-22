@@ -1,0 +1,32 @@
+---
+# Dependances externes du projet : collections ET roles.
+#
+# Installation :
+#   ansible-galaxy install -r requirements.yml          # les deux
+#   ansible-galaxy collection install -r requirements.yml
+#   ansible-galaxy role install -r requirements.yml
+
+collections:
+  - name: ansible.posix
+    version: ">=2.1.0"
+
+  - name: community.general
+    version: ">=13.0.0"
+
+  # community.postgresql 5.0.0 (septembre 2026) SUPPRIME les alias historiques
+  # `db`, `port`, `login`, `priv`, `obj`, `role`. Le role de ce TP utilise les
+  # noms canoniques (`login_db`, `login_port`, `privs`, `objs`, `roles`) et
+  # fonctionne donc avec les deux lignes.
+  - name: community.postgresql
+    version: ">=5.0.0,<6.0.0"
+
+  # Exemple d'installation depuis un depot git (utile pour une collection
+  # interne non publiee, ou pour epingler un commit precis).
+  # - name: https://github.com/exemple/ma.collection.git
+  #   type: git
+  #   version: v1.4.0
+
+# Les roles autonomes restent installables. La cle doit etre une LISTE :
+# `roles:` suivi uniquement de commentaires produit `None` et fait echouer
+# la validation de schema d'ansible-lint.
+roles: []

@@ -15,3 +15,5 @@ collections:
     version: ">=2.1.0"
   - name: community.general
     version: ">=13.0.0"
+  - name: community.postgresql
+    version: ">=4.0.0"

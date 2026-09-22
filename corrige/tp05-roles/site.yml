@@ -1,0 +1,51 @@
+---
+# TP 05 - Playbook principal du fil rouge.
+# Le playbook ne contient plus de logique : il associe des machines a des roles
+# et leur fournit des donnees. Toute la mecanique vit dans les roles.
+
+- name: Configuration de base du parc
+  hosts: all
+  become: true
+  roles:
+    - role: base
+
+- name: Deploiement des serveurs web
+  hosts: web
+  become: true
+  roles:
+    - role: nginx
+      nginx_site_racine: "{{ site_racine }}"
+      nginx_port_defaut: "{{ http_port }}"
+      nginx_sites:
+        - nom: vitrine
+          titre: Site vitrine de la formation
+
+        - nom: api
+          port: 8080
+          alias:
+            - api-v1
+            - api-legacy
+          log_level: info
+          proxies:
+            /v1/: http://127.0.0.1:9001
+            /v2/: http://127.0.0.1:9002
+
+        - nom: ancien
+          https_redirect: true
+
+- name: Deploiement de la base de donnees
+  hosts: db
+  become: true
+  roles:
+    - role: postgres
+      postgres_port: "{{ postgresql_port }}"
+      postgres_ouvrir_firewall: true
+      postgres_bases:
+        - nom: "{{ postgresql_base }}"
+          proprietaire: applicatif
+      postgres_comptes:
+        - nom: applicatif
+          # Mot de passe en clair ICI uniquement : il est chiffre au module 11.
+          mot_de_passe: motdepasse-a-chiffrer
+          base: "{{ postgresql_base }}"
+          privileges: ALL

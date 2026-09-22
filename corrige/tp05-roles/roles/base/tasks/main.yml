@@ -1,0 +1,62 @@
+---
+# Role base - socle commun a toutes les machines du parc.
+
+- name: Definir le nom d hote
+  ansible.builtin.hostname:
+    name: "{{ inventory_hostname }}"
+
+- name: Generer /etc/hosts pour l ensemble du parc
+  ansible.builtin.template:
+    src: hosts.j2
+    dest: /etc/hosts
+    owner: root
+    group: root
+    mode: "0644"
+    backup: true
+  when: base_gerer_hosts | bool
+
+- name: Definir le fuseau horaire
+  community.general.timezone:
+    name: "{{ parc_timezone }}"
+
+- name: Installer les paquets de base
+  ansible.builtin.package:
+    name: "{{ paquets_base + [paquet_ntp] }}"
+    state: present
+
+- name: Activer et demarrer la synchronisation horaire
+  ansible.builtin.systemd_service:
+    name: "{{ service_ntp }}"
+    state: started
+    enabled: true
+
+- name: Lire la cle publique du poste de travail
+  ansible.builtin.set_fact:
+    base_admin_pubkey: >-
+      {{ lookup('ansible.builtin.file', base_admin_pubkey_path, errors='ignore')
+         | default('', true) }}
+
+- name: Creer le compte de service
+  ansible.builtin.user:
+    name: "{{ base_admin_user }}"
+    comment: Compte de service Ansible
+    shell: /bin/bash
+    create_home: true
+    state: present
+
+- name: Deposer la cle publique autorisee
+  ansible.posix.authorized_key:
+    user: "{{ base_admin_user }}"
+    key: "{{ base_admin_pubkey }}"
+    state: present
+    exclusive: true
+  when: base_admin_pubkey | length > 0
+
+- name: Autoriser sudo sans mot de passe pour le compte de service
+  ansible.builtin.copy:
+    content: "{{ base_admin_user }} ALL=(ALL) NOPASSWD:ALL\n"
+    dest: "/etc/sudoers.d/90-{{ base_admin_user }}"
+    owner: root
+    group: root
+    mode: "0440"
+    validate: /usr/sbin/visudo -cf %s

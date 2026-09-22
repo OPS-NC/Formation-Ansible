@@ -1,0 +1,62 @@
+---
+# Validation des arguments du role, controlee AVANT la premiere tache.
+# Sans ce fichier, une faute de frappe dans un nom de variable ne se manifeste
+# qu'au moment ou la variable est utilisee, parfois plusieurs taches plus loin.
+argument_specs:
+  main:
+    short_description: Deploiement de sites nginx
+    description:
+      - Installe nginx et deploie un ensemble de sites decrits par des donnees.
+    options:
+      nginx_sites:
+        type: list
+        elements: dict
+        required: true
+        description: Liste des sites a deployer.
+        options:
+          nom:
+            type: str
+            required: true
+            description: Identifiant du site, utilise pour le nom de fichier et le server_name.
+          titre:
+            type: str
+            description: Titre affiche sur la page d accueil.
+          port:
+            type: int
+            description: Port d ecoute. Par defaut nginx_port_defaut.
+          alias:
+            type: list
+            elements: str
+            description: Noms alternatifs ajoutes au server_name.
+          log_level:
+            type: str
+            default: warn
+            choices: [debug, info, notice, warn, error, crit, alert, emerg]
+            description: Niveau de journalisation des erreurs.
+          https_redirect:
+            type: bool
+            default: false
+            description: Rediriger tout le trafic en HTTPS par une reponse 301.
+          proxies:
+            type: dict
+            description: Association chemin vers URL amont.
+
+      nginx_site_racine:
+        type: str
+        default: /var/www/formation
+        description: Repertoire parent des racines documentaires.
+
+      nginx_port_defaut:
+        type: int
+        default: 80
+        description: Port utilise par les sites qui n en precisent pas.
+
+      nginx_supprimer_site_defaut:
+        type: bool
+        default: true
+        description: Supprimer le site livre par la distribution.
+
+      nginx_verifier:
+        type: bool
+        default: true
+        description: Verifier en fin de role que chaque site repond.

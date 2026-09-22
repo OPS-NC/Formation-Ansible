@@ -1,0 +1,14 @@
+---
+# `vars/` a une precedence ELEVEE : reserve a ce que l'appelant ne doit pas
+# redefinir. Ici, les chemins imposes par l'empaquetage de la distribution.
+nginx_chemins:
+  Debian:
+    disponibles: /etc/nginx/sites-available
+    actives: /etc/nginx/sites-enabled
+    site_defaut: /etc/nginx/sites-enabled/default
+    utilisateur: www-data
+  RedHat:
+    disponibles: /etc/nginx/conf.d
+    actives: /etc/nginx/conf.d
+    site_defaut: /etc/nginx/conf.d/default.conf
+    utilisateur: nginx

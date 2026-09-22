@@ -1,0 +1,5 @@
+---
+- name: Redemarrer PostgreSQL
+  ansible.builtin.systemd_service:
+    name: "{{ postgres_service }}"
+    state: restarted
