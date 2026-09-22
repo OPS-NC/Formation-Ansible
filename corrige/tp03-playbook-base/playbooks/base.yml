@@ -72,6 +72,15 @@
         key: "{{ admin_pubkey }}"
         state: present
         exclusive: true
+        # `path` est OBLIGATOIRE pour que la tache fonctionne en --check sur une
+        # machine neuve : le compte n'y existe pas encore (la tache precedente
+        # n'a fait que le simuler), le module ne peut donc pas deduire le chemin
+        # du fichier et echoue sur
+        #   "Either user must exist or you must provide full path to key file
+        #    in check mode".
+        # `manage_dir` reste a true par defaut : le repertoire .ssh est cree
+        # avec les droits 0700 attendus par sshd.
+        path: "/home/{{ admin_user }}/.ssh/authorized_keys"
       when: admin_pubkey | length > 0
 
     - name: Autoriser sudo sans mot de passe pour le compte de service
