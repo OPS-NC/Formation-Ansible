@@ -13,7 +13,12 @@
     <tr><th>Systeme</th><td>{{ ansible_facts['distribution'] }} {{ ansible_facts['distribution_version'] }}</td></tr>
     <tr><th>Environnement</th><td>{{ parc_environnement }}</td></tr>
     <tr><th>Groupes</th><td>{{ group_names | sort | join(', ') }}</td></tr>
-    <tr><th>Genere le</th><td>{{ ansible_date_time.iso8601 }}</td></tr>
+{#
+  PAS d'horodatage ici. `ansible_date_time.iso8601` change a chaque execution :
+  le fichier rendu differe systematiquement de celui en place, la tache est
+  rapportee `changed` a chaque passage et le test d'idempotence ne passe
+  jamais. Une donnee volatile n'a pas sa place dans un fichier gere.
+#}
   </table>
 </body>
 </html>
