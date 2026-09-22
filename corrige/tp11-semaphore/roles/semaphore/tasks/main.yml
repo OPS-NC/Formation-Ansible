@@ -5,6 +5,17 @@
 # systeme, ni unite systemd, ni repertoire de configuration. Tout le reste est
 # a la charge de ce role.
 
+# La box Debian du lab est epinglee : son cache apt reference des versions que
+# Debian retire du miroir a chaque point release. Sans ce rafraichissement,
+# l'installation echoue en 404 sur des dependances transitives :
+#   E: Failed to fetch .../libngtcp2-16_1.11.0-1_amd64.deb  404  Not Found
+#   E: Failed to fetch .../python3.13-venv_3.13.5-2_amd64.deb  404  Not Found
+- name: Rafraichir le cache de paquets
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+  changed_when: false
+
 - name: Installer les prerequis
   ansible.builtin.package:
     name:
