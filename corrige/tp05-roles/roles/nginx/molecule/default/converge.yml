@@ -1,0 +1,28 @@
+---
+# Applique le role dans les conteneurs, exactement comme le ferait le
+# playbook du projet. C'est ce playbook que `idempotence` rejoue.
+- name: Appliquer le role nginx
+  hosts: molecule
+  become: true
+
+  vars:
+    parc_domaine: test.local
+    parc_environnement: test
+    banniere: "Conteneur de test Molecule"
+    nginx_site_racine: /var/www/formation
+    nginx_port_defaut: 80
+    nginx_sites:
+      - nom: vitrine
+        titre: Site vitrine
+      - nom: api
+        port: 8080
+        alias:
+          - api-v1
+        log_level: info
+        proxies:
+          /v1/: http://127.0.0.1:9001
+      - nom: ancien
+        https_redirect: true
+
+  roles:
+    - role: nginx

@@ -17,3 +17,7 @@ collections:
     version: ">=13.0.0"
   - name: community.postgresql
     version: ">=4.0.0"
+
+  # Utilisee par les scenarios Molecule pour piloter les conteneurs de test.
+  - name: containers.podman
+    version: ">=1.16.0"

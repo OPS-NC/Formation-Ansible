@@ -1,0 +1,38 @@
+---
+# Molecule 26.x - configuration "ansible-native".
+#
+# Depuis Molecule 25.9, le modele historique (driver / platforms / provisioner)
+# est marque "pre ansible-native" et conserve pour compatibilite. La forme
+# actuelle decrit l'infrastructure de test avec... Ansible lui-meme : un
+# inventaire, un playbook `create.yml` et un playbook `destroy.yml`.
+#
+# ATTENTION : le schema est valide STRICTEMENT (additionalProperties: false).
+# Une cle inconnue fait echouer molecule immediatement.
+
+ansible:
+  cfg:
+    defaults:
+      deprecation_warnings: false
+      callback_result_format: yaml
+  executor:
+    backend: ansible-playbook
+    args:
+      ansible_playbook:
+        - --inventory=inventory/
+
+dependency:
+  name: galaxy
+  options:
+    requirements-file: ${MOLECULE_SCENARIO_DIRECTORY}/requirements.yml
+
+scenario:
+  # Sequence explicite. `idempotence` rejoue `converge` et echoue si une
+  # seule tache rapporte `changed` : c'est le test d'idempotence automatise.
+  test_sequence:
+    - dependency
+    - destroy
+    - create
+    - converge
+    - idempotence
+    - verify
+    - destroy

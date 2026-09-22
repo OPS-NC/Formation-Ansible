@@ -1,0 +1,14 @@
+---
+- name: Creer les conteneurs de test
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Demarrer un conteneur par machine de l inventaire
+      containers.podman.podman_container:
+        name: "{{ item }}"
+        hostname: "{{ item }}"
+        image: "{{ hostvars[item]['container_image'] }}"
+        command: "{{ hostvars[item]['container_command'] | default('sleep 1d') }}"
+        systemd: "{{ hostvars[item]['container_systemd'] | default(false) }}"
+        state: started
+      loop: "{{ groups['molecule'] }}"

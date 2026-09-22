@@ -1,12 +1,18 @@
 ---
-# Profil de reference de la formation.
-# Le profil "production" est la cible finale (module 09).
-# Les modules 01 a 08 tolerent le profil "moderate".
-profile: moderate
+# Profil de qualite du depot.
+#
+# Les profils sont CUMULATIFS : production contient min, basic, moderate,
+# safety et shared. L'ensemble des corriges de la formation passe ce profil.
+profile: production
 
 exclude_paths:
   - .vagrant/
   - .github/
   - collections/
+  - .ansible/
 
-# yamllint est appele par ansible-lint via la regle "yaml".
+# Regles signalees sans faire echouer, a justifier et resorber.
+warn_list:
+  # `state: latest` est legitime dans un playbook de patching (TP 06), mais
+  # reste un defaut de reproductibilite ailleurs.
+  - package-latest

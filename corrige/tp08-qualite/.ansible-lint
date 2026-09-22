@@ -1,0 +1,25 @@
+---
+# Configuration de reference pour un projet en production.
+#
+# Le profil `production` est cumulatif : il inclut min, basic, moderate,
+# safety et shared. Il ajoute uniquement 7 regles, dont `fqcn`.
+profile: production
+
+exclude_paths:
+  - .vagrant/
+  - .github/
+  - collections/
+  - .ansible/
+
+# Regles tolerees, signalees sans faire echouer. A justifier et a resorber.
+warn_list:
+  # `state: latest` est necessaire pour un playbook de patching (TP 06),
+  # mais reste un defaut de reproductibilite dans un playbook de deploiement.
+  - package-latest
+
+# `offline: true` evite que le lint depende du reseau en CI.
+offline: false
+
+# Modules fournis par des collections non installees sur le poste de lint.
+mock_modules: []
+mock_roles: []

@@ -1,0 +1,60 @@
+---
+# Verifications post-deploiement. Molecule n'impose rien : ce sont des
+# assertions Ansible ordinaires.
+- name: Verifier le resultat du role
+  hosts: molecule
+  become: true
+
+  vars:
+    sites_attendus: [vitrine, api, ancien]
+
+  tasks:
+
+    - name: Relever l etat des services
+      ansible.builtin.service_facts:
+
+    - name: Le service nginx doit etre actif
+      ansible.builtin.assert:
+        that:
+          - ansible_facts['services']['nginx.service']['state'] == 'running'
+        fail_msg: nginx n est pas demarre
+
+    - name: Les fichiers de vhost doivent exister
+      ansible.builtin.stat:
+        path: "{{ nginx_chemins[ansible_facts['os_family']].disponibles }}/{{ item }}.conf"
+      register: nginx_vhosts
+      loop: "{{ sites_attendus }}"
+
+    - name: Chaque vhost attendu est present
+      ansible.builtin.assert:
+        that:
+          - item.stat.exists
+        fail_msg: "vhost manquant : {{ item.item }}"
+      loop: "{{ nginx_vhosts.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: La configuration nginx doit etre valide
+      ansible.builtin.command: nginx -t
+      changed_when: false
+
+    - name: Le site par defaut doit avoir ete supprime
+      ansible.builtin.stat:
+        path: "{{ nginx_chemins[ansible_facts['os_family']].site_defaut }}"
+      register: nginx_defaut
+
+    - name: Absence du site par defaut
+      ansible.builtin.assert:
+        that:
+          - not nginx_defaut.stat.exists
+
+    - name: Le site vitrine doit repondre
+      ansible.builtin.uri:
+        url: http://127.0.0.1/
+        return_content: true
+      register: nginx_page
+
+    - name: La page contient la banniere attendue
+      ansible.builtin.assert:
+        that:
+          - "'Conteneur de test Molecule' in nginx_page.content"
