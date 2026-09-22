@@ -67,11 +67,31 @@ Lecture réussie, seule la longueur du mot de passe est affichée :
 msg: base=formation compte=applicatif longueur_mot_de_passe=27
 ```
 
-Avec un mauvais mot de passe, code retour 4 :
+Avec un mauvais mot de passe, `ansible-vault view` sort en **code retour 1**. Le message a
+changé de forme en `ansible-core` 2.21 : il est désormais chaîné par un `<<< caused by >>>`.
 
+```console
+$ ansible-vault view --vault-id dev@/tmp/mauvais dev/group_vars/db/vault.yml ; echo $?
+[ERROR]: Failed to view '.../vault.yml': Decryption failed (no vault secrets were
+found that could decrypt).
+
+Failed to view '.../vault.yml'.
+
+<<< caused by >>>
+
+Decryption failed (no vault secrets were found that could decrypt).
+1
 ```
-ERROR! Decryption failed (no vault secrets were found that could decrypt).
+
+Un **playbook** lancé avec le mauvais mot de passe sort en **code retour 4** : la source
+d'inventaire qui contient le fichier chiffré ne peut pas être analysée, et plus aucune machine
+n'est jointe.
+
+```console
+[WARNING]: Unable to parse .../tp10-secrets/inventories/dev as an inventory source
 ```
+
+Ne confondez pas les deux : 1 pour l'outil `ansible-vault`, 4 pour `ansible-playbook`.
 
 ## Ce que le corrigé illustre
 
