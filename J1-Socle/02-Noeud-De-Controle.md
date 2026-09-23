@@ -365,7 +365,16 @@ Disposer d'un nœud de contrôle fonctionnel et joindre les quatre VMs du jour 1
 
 4. **Écrire l'inventaire** `inventories/dev/hosts.yml` déclarant les quatre machines avec leur
    adresse sur le réseau host-only, l'utilisateur `vagrant` et le chemin de clé privée
-   templatisé.
+   templatisé. Les adresses figurent dans le `Vagrantfile`. Point de départ :
+   ```yaml
+   ---
+   all:
+     vars:                    # variables communes à toutes les machines
+       ma_variable: valeur
+     hosts:
+       machine01:             # nom utilisé par Ansible (inventory_hostname)
+         ansible_host: 192.0.2.10
+   ```
 
 5. **Vérifier l'inventaire sans rien contacter :**
    ```bash
