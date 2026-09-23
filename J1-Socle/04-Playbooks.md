@@ -136,6 +136,11 @@ commande arbitraire a fait. Trois outils pour corriger cela.
   failed_when: reload.rc not in [0, 2]
 ```
 
+Ici, `failed_when` déclare la tâche en échec seulement si le code retour n'est ni 0 ni 2 : on
+suppose que le script renvoie 2 pour signaler « rien à recharger », ce qui n'est pas une
+erreur. Sans cette ligne, Ansible considérerait le code 2 comme un échec et arrêterait le
+play sur cette machine.
+
 > **Attention**
 > Par défaut, une tâche échoue si le code retour est différent de zéro. `failed_when` remplace
 > entièrement ce test : si vous l'utilisez, pensez à y inclure le cas d'erreur réel.
