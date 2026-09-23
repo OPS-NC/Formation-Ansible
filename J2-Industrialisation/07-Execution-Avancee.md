@@ -44,6 +44,12 @@ Points à retenir :
 - Les blocs acceptent `when`, `become`, `tags` : ils s'appliquent à toutes les tâches du bloc.
 - `ansible_failed_task` et `ansible_failed_result` sont disponibles dans `rescue`.
 
+> **Traiter l'erreur ne l'annule pas.** `rescue` ne restaure pas les paquets précédents :
+> un retour arrière doit être écrit explicitement. Si `rescue` réussit, Ansible considère
+> l'erreur comme traitée ; le TP utilise donc `fail` dans `rescue` pour arrêter les lots suivants.
+> Une machine devenue `UNREACHABLE` ne déclenche pas ces blocs comme un échec de tâche :
+> `always` ne garantit pas un nettoyage distant si la connexion est perdue.
+
 ### Les modificateurs d'échec
 
 | Directive | Effet |
@@ -82,6 +88,11 @@ serial: "25%"             # par quarts
 
 `serial` découpe le play en sous-plays successifs : chaque lot traverse **toutes** les tâches
 avant que le suivant ne démarre. Les handlers sont donc déclenchés **par lot**.
+
+> `forks` limite le nombre de tâches exécutées en parallèle ; `serial` limite le nombre
+> de machines engagées dans **tout le cycle** de maintenance. Avec `forks = 1` seul, chaque
+> machine pourrait être mise en maintenance avant que la première soit rétablie. Avec
+> `serial: 1`, la première termine le cycle avant que la suivante le commence.
 
 ### `max_fail_percentage` et `any_errors_fatal`
 
@@ -255,8 +266,8 @@ explicite).
 
 ### Objectif
 
-Mettre à jour les serveurs **un par un**, en les sortant de la rotation, avec remise en état
-garantie et rapport consolidé.
+Mettre à jour les serveurs **un par un**, en les sortant de la rotation, avec remise en rotation
+conditionnée au contrôle de santé et rapport consolidé.
 
 ### Énoncé
 
@@ -293,6 +304,12 @@ Dans `always` : retirer le fichier `MAINTENANCE`, **uniquement si la vérificati
 Ajouter un second play produisant `rapport-patching.json` sur le **nœud de contrôle**, indiquant
 pour chaque machine si un redémarrage a été nécessaire.
 
+> **Lire le résultat.** Le second play n'a pas de `serial` : son `run_once` produit un seul
+> rapport, après les lots. Avec `--limit`, ce rapport porte seulement sur les hôtes retenus.
+> La simulation ne permet pas de prédire si de nouveaux paquets imposeront un redémarrage :
+> ils ne sont pas installés. Enfin, ce playbook réalise une opération de maintenance ; le
+> témoin temporaire et le rapport daté peuvent changer à chaque passage, même sans mise à jour.
+
 ### Déroulé attendu
 
 ```bash
@@ -318,7 +335,7 @@ cat rapport-patching.json
   complète d'un système n'est pas portable : `dnf` accepte `name: '*'` avec `state: latest`,
   là où `apt` attend `upgrade: dist`. La détection du redémarrage diffère de même. Quand deux
   familles diffèrent par une **valeur**, les variables de groupe suffisent. Quand elles diffèrent
-  par le **mécanisme** — ici un fichier contre un code retour — il faut normaliser explicitement.
+  par le **mécanisme** — ici deux commandes de diagnostic différentes — il faut normaliser explicitement.
   La règle reste : ne pas laisser la différence se propager dans la suite du playbook.
 - `serial: 1` transforme le play en une succession de sous-plays. Les handlers sont déclenchés
   **par machine**, pas en fin de parcours.
@@ -334,7 +351,7 @@ cat rapport-patching.json
 |---|---|
 | Le parc entier tombe | `serial` absent |
 | Le déploiement continue après un échec | `max_fail_percentage` absent |
-| `MAINTENANCE` persiste après échec | Remise en état placée dans `block` au lieu de `always` |
+| `MAINTENANCE` persiste après échec | Attendu si le contrôle de santé n'a pas réussi : la machine reste signalée en maintenance |
 | Machine en panne remise en rotation | `always` non conditionné sur la réussite |
 | `sudo: a password is required` sur le rapport | `become: false` oublié sur la délégation |
 | Rapport écrit autant de fois qu'il y a de machines | `run_once` oublié |

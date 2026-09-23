@@ -308,7 +308,7 @@ ansible-config init --disabled -t all        # gabarit commenté de toutes les o
 
 ## 5. Le lab
 
-Les sept machines sont décrites dans le [`Vagrantfile`](../Vagrantfile). Points de conception à
+Les huit machines sont décrites dans le [`Vagrantfile`](../Vagrantfile). Points de conception à
 retenir :
 
 - **Les versions de box sont épinglées.** `bento/rockylinux-10` est passée de BIOS à EFI entre
@@ -342,6 +342,13 @@ Le chemin est relatif : il impose de lancer Ansible depuis la racine du dépôt.
 ### Objectif
 
 Disposer d'un nœud de contrôle fonctionnel et joindre les quatre VMs du jour 1.
+
+> **Repères pour le lab.** VirtualBox exécute les VMs ; Vagrant les crée et les démarre depuis
+> le `Vagrantfile` ; Ansible les configure ensuite. Le réseau NAT leur donne accès à Internet,
+> tandis que le réseau host-only `192.168.56.0/24` relie votre poste et les VMs entre eux.
+> Sauf indication contraire, écrivez les fichiers et lancez les commandes depuis le poste,
+> à la racine du dépôt. Les exemples de théorie illustrent un point ; l'énoncé précise les
+> fichiers à construire pour le projet.
 
 ### Énoncé
 

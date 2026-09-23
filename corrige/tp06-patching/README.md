@@ -50,7 +50,7 @@ ansible-inventory -i $I1 -i $I2 --host db01 | grep maj_
 |---|---|
 | Une machine à la fois | `serial: 1` |
 | Arrêt au premier échec | `max_fail_percentage: 0` |
-| Remise en état garantie | `always:` |
+| Retrait du témoin après contrôle réussi | `always:` avec condition sur la santé du service |
 | Interruption contrôlée | `rescue:` puis `fail` |
 | Attente active d'un service | `until` / `retries` / `delay` |
 | Redémarrage avec attente du retour | `ansible.builtin.reboot` |
@@ -93,22 +93,6 @@ normalise le résultat dans une variable unique.
 > box `bento/rockylinux-10`. Attention, le binaire autonome `/usr/bin/needs-restarting` est lui
 > fourni par `yum-utils` : ce n'est pas le même chemin d'appel. Rocky 10 est resté sur **DNF4** ;
 > ni `dnf5` ni `python3-libdnf5` n'y sont distribués.
-
-## Le paquet qui pose une question
-
-`grub-pc` redemande son disque d'installation à chaque mise à jour. La box `bento/debian-13`
-est livrée **sans réponse enregistrée** (`grub-pc/install_devices` vide,
-`grub-pc/install_devices_failed_upgrade` à `true`). En mode non interactif la question ne peut
-pas être posée, et la mise à jour complète s'arrête :
-
-```
-You must correct your GRUB install devices before proceeding
-dpkg: error processing package grub-pc (--configure)
-E: Sub-process /usr/bin/dpkg returned an error code (1)
-```
-
-Le playbook enregistre la réponse dans debconf **avant** la mise à jour. Le disque est porté
-par `maj_disque_amorcage` dans `group_vars/debian.yml`, comme toute différence de parc.
 
 ## Le paquet qui pose une question
 

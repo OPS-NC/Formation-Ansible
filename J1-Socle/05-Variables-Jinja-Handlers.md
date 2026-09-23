@@ -39,6 +39,11 @@ Chaque module renvoie un dictionnaire. Les clés communes sont `changed`, `faile
     var: disque.stdout_lines[-1]
 ```
 
+> **Portée des résultats.** `register` conserve le résultat pour chaque hôte : `disque` sur
+> `web01` contient la réponse de `web01`, pas celle de `web02`. Les champs disponibles
+> dépendent du module : `stdout` et `rc` concernent notamment les commandes. Ces résultats
+> sont utilisables pendant l'exécution courante, sans être écrits dans l'inventaire.
+
 Avec une boucle, `register` collecte une liste dans la clé `results` :
 
 ```yaml
@@ -111,6 +116,11 @@ elle l'emporte sur les variables d'inventaire.
 
 Tests utiles : `is defined`, `is not defined`, `is none`, `is truthy`, `in`, `is match(...)`,
 `is version('2.0', '>=')`.
+
+> `when` et `until` attendent déjà une expression Jinja2 : n'ajoutez pas de `{{ }}` autour.
+> `when` décide si la tâche s'exécute sur l'hôte courant ; `until` la répète jusqu'à obtenir
+> le résultat attendu. Dans un paramètre comme `name: "{{ paquet_debug }}"`, les accolades
+> demandent au contraire de remplacer le nom de variable par sa valeur.
 
 ```yaml
 - name: Creer les repertoires
@@ -374,9 +384,9 @@ niveau de journalisation, redirection HTTPS, et une liste variable de `location`
 
 ```bash
 ansible-lint playbooks/
-ansible-playbook playbooks/web.yml --check --diff
 ansible-playbook playbooks/web.yml
 ansible-playbook playbooks/web.yml        # idempotence : changed=0, aucun handler
+ansible-playbook playbooks/web.yml --check --diff   # audit après convergence, comme au TP 03
 ```
 
 ### Vérification
@@ -385,7 +395,7 @@ ansible-playbook playbooks/web.yml        # idempotence : changed=0, aucun handl
 # Page statique du site vitrine
 curl -s -H "Host: vitrine.lab.local" http://192.168.56.11/ | head -5
 
-# Le vhost api repond, et sa redirection n'est pas suivie
+# Le vhost ancien repond, et sa redirection n'est pas suivie
 curl -s -H "Host: ancien.lab.local" -o /dev/null -w "%{http_code}\n" http://192.168.56.11/
 
 # Configuration acceptee par nginx
@@ -398,6 +408,12 @@ ansible web -a "nginx -t" --become
 > Gateway`. Ce n'est pas une erreur du TP. L'objectif ici est le **rendu de la configuration**,
 > pas le fonctionnement du proxy ; le gabarit produit bien les blocs attendus, ce que
 > `nginx -t` confirme.
+
+> **Lire les contrôles HTTP.** L'adresse IP choisit la machine ; l'en-tête `Host` choisit
+> le vhost nginx. Cela permet de tester les noms `*.lab.local` sans serveur DNS. Attendez
+> un `200` pour la page statique et un `301` pour `ancien`, sans suivre sa redirection :
+> le TP ne met pas en place de serveur HTTPS. Une réponse de nginx et un proxy applicatif
+> fonctionnel sont deux contrôles différents.
 
 ### Points d'attention
 

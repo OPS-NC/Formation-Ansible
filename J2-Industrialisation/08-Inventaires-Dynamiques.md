@@ -201,6 +201,16 @@ Dans tous les cas, `ansible-inventory --list` valide le résultat sans exécuter
 
 Enrichir l'inventaire du fil rouge avec des groupes calculés, et activer un cache de facts.
 
+> **Ordre des opérations.** Ansible construit l'inventaire avant de lancer les tâches.
+> La collecte `setup` remplit le cache ; c'est à la lecture suivante de l'inventaire que
+> `constructed` peut en tirer de nouveaux groupes. Ces groupes sélectionnent des hôtes,
+> mais ne définissent aucun ordre d'exécution : les deux appels de patching de l'étape 5
+> imposent explicitement « canari, puis reste du parc ».
+>
+> Après le renommage de `hosts.yml`, réglez aussi `inventory = inventories/dev/` dans
+> `ansible.cfg`, ou passez ce répertoire avec `-i` à chaque commande. Sinon les commandes
+> sans `-i` continuent de chercher l'ancien fichier.
+
 ### Énoncé
 
 1. **Réorganiser l'inventaire en répertoire** : renommer le fichier statique `01-hosts.yml` et

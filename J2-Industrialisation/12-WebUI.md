@@ -221,6 +221,12 @@ ansible-playbook semaphore.yml     # idempotence : changed=0
 
 Depuis `http://192.168.56.31:3000` :
 
+> **Le contrôleur change.** Votre poste installe Semaphore sur `tools`, puis `tools` exécute
+> les playbooks du dépôt. Une modification locale ne sera donc visible dans l'interface
+> qu'après sa publication dans Git. La clé privée du Key Store doit correspondre à une
+> clé publique autorisée pour le compte `ansible` sur les cibles (TP 03). L'accès au dépôt
+> Git et l'accès SSH aux VMs sont deux accès distincts, même si le Key Store gère les deux.
+
 1. **Projet** « Formation Ansible ».
 2. **Key Store** : la clé SSH d'accès aux machines, et le mot de passe vault du module 11.
 3. **Repository** : le dépôt Git du fil rouge, branche `main`.
@@ -238,6 +244,12 @@ Depuis `http://192.168.56.31:3000` :
 7. **Schedule** : exécution quotidienne du playbook de patching.
 8. **Integration** : webhook déclenché par une poussée sur le dépôt Git.
 9. Créer un second utilisateur en lecture seule et vérifier ce qu'il peut faire.
+
+> **Relier les objets.** Créez un second Task Template pour `playbooks/patching.yml`, puis
+> associez-lui le Schedule : planifier le template `site.yml` ne lance pas le patching.
+> Le webhook exige que le serveur Git puisse joindre Semaphore ; un Git hébergé sur Internet
+> ne peut pas appeler directement `192.168.56.31`. Dans le lab, utilisez le Git local prévu
+> par le formateur ; à défaut, retenez l'exécution manuelle pour cette partie.
 
 ### Points d'attention
 

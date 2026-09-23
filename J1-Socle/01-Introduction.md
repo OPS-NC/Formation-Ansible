@@ -36,7 +36,7 @@ Aucun démon n'est installé sur les machines gérées. Ansible se connecte en S
 Conséquences directes :
 
 - **Prérequis minimaux** sur la cible : un accès SSH et un interpréteur Python (sauf modules `raw` et équipements réseau).
-- **Pas de surface d'attaque supplémentaire** : aucun port à ouvrir en entrée, aucun agent à mettre à jour.
+- **Pas de port propre à Ansible** : le port SSH doit déjà être accessible depuis le contrôleur ; aucun agent Ansible n'est à mettre à jour.
 - **Le nœud de contrôle devient un actif critique** : il détient les accès à tout le parc. Il doit être traité comme un bastion.
 - **Performance liée au nombre de connexions SSH** : c'est le facteur limitant sur les grands parcs (voir module 07).
 
@@ -60,7 +60,12 @@ Une exécution idempotente produit le même état final quel que soit le nombre 
 
 Ansible rapporte quatre états par tâche : `ok`, `changed`, `skipped`, `failed`. Un second passage qui ne produit aucun `changed` est le test d'idempotence — il est vérifié systématiquement à partir du module 04, et automatisé par Molecule au module 09.
 
-L'idempotence n'est **pas automatique** : elle est portée par les modules. `ansible.builtin.package` est idempotent ; `ansible.builtin.command` ne l'est pas, sauf si vous le déclarez avec `creates`, `removes` ou `changed_when`.
+L'idempotence n'est **pas automatique** : elle est portée par les modules. `ansible.builtin.package` sait vérifier l'état d'un paquet ; avec `ansible.builtin.command`, vous devez encadrer la commande et déclarer quand elle modifie réellement le système.
+
+> `creates` et `removes` peuvent empêcher une commande de se rejouer. `changed_when` règle
+> seulement ce qu'Ansible **rapporte** : la commande s'exécute tout de même. Mettre
+> `changed_when: false` sur une commande qui modifie le système masque donc le changement,
+> sans rendre cette commande idempotente.
 
 ### 2.4 Déclaratif, mais à exécution ordonnée
 
@@ -109,6 +114,10 @@ C'est une simplification importante : le comportement est lisible et prévisible
 | **FQCN** | *Fully Qualified Collection Name* : `ansible.builtin.copy`, `community.postgresql.postgresql_db`. |
 
 **Module ou plugin ?** Un module est transféré et exécuté sur la cible. Un plugin s'exécute sur le contrôleur. Un filtre Jinja2, un plugin d'inventaire ou un plugin de connexion ne « voient » jamais la machine distante autrement qu'à travers ce que la connexion remonte.
+
+> Ce parcours décrit d'abord les modules d'administration Linux. Les modules réseau et ceux
+> qui pilotent une API s'exécutent généralement sur le contrôleur : la cible administrée
+> n'est alors pas la machine qui exécute le code Python. Cette distinction revient au jour 3.
 
 ## 4. Les trois Ansible
 

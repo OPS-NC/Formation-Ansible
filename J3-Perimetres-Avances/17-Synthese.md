@@ -45,8 +45,9 @@ légitime.
 fait échouer `ansible-lint`, la chaîne d'intégration et la construction de l'execution
 environment. La déclaration des dépendances n'est pas de la paperasse.
 
-**Vérifier avant d'appliquer.** `--check --diff` transforme un playbook en outil d'audit de
-conformité, exécutable sans risque.
+**Vérifier avant d'appliquer.** `--check --diff` permet d'auditer les écarts, dans les limites
+des modules utilisés. Une tâche portant `check_mode: false` s'exécute réellement, même dans
+ce mode : la simulation ne dispense pas de lire le playbook.
 
 ## 3. Checklist d'un projet en production
 
@@ -105,7 +106,7 @@ Dans cet ordre, chaque étape rendant la suivante possible.
 5. **Chiffrer les secrets** avant qu'il y en ait beaucoup.
 
 6. **Automatiser la vérification** avant d'automatiser le déploiement. Une chaîne qui lance
-   `--check --diff` chaque nuit détecte la dérive sans rien risquer.
+   `--check --diff` chaque nuit peut détecter la dérive sur les ressources prises en charge.
 
 7. **Ajouter une interface web** quand plusieurs personnes exécutent, ou quand il faut tracer.
    Pas avant.

@@ -257,7 +257,19 @@ journalisation et dans les artefacts de CI.
 
 Sortir le mot de passe PostgreSQL du code en clair, avec deux environnements distincts.
 
+> **Deux mots de passe à distinguer.** Le mot de passe PostgreSQL sert au compte SQL ;
+> le mot de passe Vault sert à déchiffrer le fichier qui le contient. `rekey` change cette
+> protection sans changer le mot de passe de la base. Pour modifier ce dernier, éditez la
+> valeur chiffrée puis rejouez le rôle. Le préfixe `vault_` est une convention de nommage :
+> il ne chiffre rien par lui-même.
+
 ### Énoncé
+
+> **Continuité de l'inventaire.** Déplacez le contenu de `group_vars/db.yml` du TP 02 vers
+> `group_vars/db/main.yml`, puis retirez l'ancien fichier pour ne garder qu'une définition.
+> Remplacez aussi le mot de passe littéral passé au rôle dans `site.yml` : chiffrer une nouvelle
+> variable ne sert à rien si le rôle continue de recevoir l'ancienne valeur. Le répertoire
+> `prod` permet ici de comparer le chiffrement ; aucune nouvelle VM de production n'est créée.
 
 1. **Séparer le clair du chiffré** dans `inventories/dev/group_vars/db/` :
    - `main.yml` : `postgresql_base`, `postgresql_compte`, `postgresql_port`, et

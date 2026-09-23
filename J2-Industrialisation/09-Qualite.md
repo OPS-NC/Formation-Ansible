@@ -268,6 +268,12 @@ Rocky Linux 10.
 
 ### Prérequis
 
+> **Ce que vous testez.** Reprenez le rôle `nginx` du TP 05. Molecule crée ses propres
+> conteneurs `debian13` et `rocky10`, indépendants de `web01` et `db01` ; son inventaire
+> utilise Podman au lieu de SSH. `converge.yml` appelle le rôle avec des données de test,
+> `verify.yml` observe le service obtenu. Un `changed=0` au second passage ne suffit pas
+> à prouver que le site répond : c'est pourquoi les deux vérifications sont nécessaires.
+
 ```bash
 pipx install molecule
 sudo apt install -y podman
@@ -309,6 +315,9 @@ ansible-galaxy collection install containers.podman
 
 7. **Provoquer un échec d'idempotence** : ajouter au rôle une tâche `command` sans
    `changed_when`, relancer `molecule test` et constater l'arrêt à l'étape `idempotence`.
+
+   Retirer ensuite la tâche ajoutée pour l'expérience et retrouver un scénario réussi avant
+   de passer à la CI.
 
 ### Points d'attention
 

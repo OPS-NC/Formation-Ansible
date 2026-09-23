@@ -35,7 +35,7 @@ all:
       vars:
         ansible_connection: ansible.netcommon.network_cli
         ansible_network_os: vyos.vyos.vyos
-        ansible_user: vagrant
+        ansible_user: vyos
         ansible_become: false
 ```
 
@@ -91,20 +91,12 @@ Deux usages structurants :
 - **`overridden` mérite une revue.** Il supprime tout ce qui n'est pas décrit. C'est l'état qui
   garantit la conformité, et celui qui coupe un réseau si le modèle est incomplet.
 
-> **Attention — `rendered` et `parsed` réclament quand même une cible joignable**
-> Leur documentation les présente, à juste titre, comme des traitements hors ligne : **le module
-> lui-même n'ouvre aucune connexion** pour ces deux états. Le blocage vient de son **greffon
-> d'action** et du greffon de connexion, pas du module.
->
-> Constat reproduit ici avec `cisco.ios` 11.5 et `vyos.vyos` 6.0 sur `ansible-core` 2.21.
-> Ne généralisez pas à toutes les collections ni à toutes les versions sans vérifier :
-> - avec `connection: local`, le module refuse : `Connection type local is not valid for this
->   module` — un garde-fou présent dans le greffon d'action depuis `cisco.ios` 4.0.0 ;
-> - avec `network_cli`, ansible-core établit la connexion SSH **avant** d'exécuter le module,
->   car ce greffon déclare `force_persistence`.
->
-> Aucun contournement documenté n'a été trouvé pour cette combinaison. Pour travailler sans
-> équipement, voyez la section 4.
+> **Distinguer type de connexion et connexion réelle.** Le greffon d'action refuse
+> `connection: local` pour les resource modules utilisés ici. Cela ne signifie pas que
+> le rendu contacte le routeur : le corrigé montre que `vyos_interfaces` en `rendered`
+> fonctionne avec `ansible_connection: ansible.netcommon.network_cli` même sur une adresse
+> injoignable. Déclarer un transport et ouvrir une session sont deux choses différentes.
+> Le TP sépare ce rendu de commandes de l'analyse d'une sortie CLI par `cli_parse`.
 
 ## 3. Le paysage des collections
 
@@ -239,6 +231,12 @@ dérive. NetBox 4.7 se déploie facilement dans une VM avec `netbox-docker`.
 
 Piloter un équipement réseau réel, puis analyser une configuration hors ligne.
 
+> **Deux entrées différentes.** `gathered` lit le VyOS du lab et retourne ses données
+> structurées. L'exercice `cli_parse` lit un fichier de sortie **Cisco** fourni : les noms
+> `GigabitEthernet…` ne sont donc pas ceux de `net01`. Un resource module gère une famille
+> de paramètres : `vyos_interfaces` traite notamment les descriptions, `vyos_l3_interfaces`
+> les adresses IP. `replaced` s'applique au périmètre de ce module, pas à tout le routeur.
+
 ### Préparation
 
 ```bash
@@ -341,15 +339,16 @@ ok: [localhost] =>
 - Pas de `become` sur un équipement réseau.
 - La **sauvegarde précède toujours** la modification.
 - `merged` n'enlève rien ; `overridden` enlève tout ce qui n'est pas décrit.
-- `rendered` et `parsed` **exigent une cible joignable**, malgré leur appellation « hors ligne ».
-- `cli_parse` avec `text:` est la seule voie réellement hors ligne.
+- `rendered` produit des commandes sans les appliquer ; pour le module VyOS du TP, déclarez
+  `network_cli`, même si aucun équipement n'est contacté.
+- `cli_parse` avec `text:` analyse un fichier sans connexion à un équipement.
 
 ### Pièges courants
 
 | Symptôme | Cause |
 |---|---|
 | `Connection type local is not valid for this module` | Resource module avec `connection: local` |
-| `ssh connect failed: Timeout` sur `rendered` | Le greffon `network_cli` se connecte avant le module |
+| Une connexion SSH est tentée pendant un exercice hors ligne | Vérifier l'état demandé et les autres tâches, notamment la collecte de facts |
 | `become` en échec | Les équipements réseau n'ont pas de `sudo` |
 | Configuration perdue | `overridden` sur un modèle incomplet |
 | Équipement injoignable après exécution | Interface d'administration modifiée sans `commit confirmed` |

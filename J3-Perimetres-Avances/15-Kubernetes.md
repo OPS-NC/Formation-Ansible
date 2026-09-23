@@ -34,6 +34,13 @@ amont.
 
 ## 2. Monter un cluster
 
+> **Repères Kubernetes.** Le plan de contrôle expose l'API et décide où lancer les
+> applications ; les workers les exécutent. Un **Pod** contient un ou plusieurs conteneurs.
+> Un **Deployment** maintient le nombre de copies demandé de ces Pods. Un **Service** leur
+> donne un point d'accès stable, et un **Ingress** décrit les règles HTTP vers ce Service.
+> Le **namespace** regroupe les ressources. Un chart Helm empaquette des ressources et leurs
+> paramètres ; un manifeste YAML décrit une ressource à envoyer à l'API.
+
 | Outil | Pour quoi |
 |---|---|
 | **k3s** + `k3s.orchestration` (dépôt k3s-io) | Lab, périphérie, petits clusters |
@@ -107,6 +114,10 @@ Le jeton est **généré à l'avance et poussé sur tous les nœuds**. Le lire s
 (`/var/lib/rancher/k3s/server/node-token`) créerait une dépendance d'ordre inutile.
 
 ### Récupérer le kubeconfig
+
+> Le **kubeconfig** indique l'adresse de l'API, le certificat à vérifier et les identifiants
+> du client. Il permet à `kubectl` et aux modules Ansible de parler au cluster depuis votre
+> poste. Il est distinct du jeton k3s, qui sert à faire rejoindre les nœuds au cluster.
 
 `/etc/rancher/k3s/k3s.yaml` pointe vers `127.0.0.1` : utilisable sur le serveur, inutilisable
 depuis le poste. On substitue l'adresse en le rapatriant.
@@ -233,8 +244,11 @@ puis le remettre en service.
     state: uncordon
 ```
 
-Combiné au `serial: 1` du module 07, on obtient une mise à jour glissante d'un cluster entier
-sans interruption de service.
+Le `drain` empêche de placer de nouveaux Pods sur le nœud et évacue ceux qui peuvent l'être ;
+`uncordon` autorise de nouveau leur placement, sans les ramener automatiquement sur ce nœud.
+Combiné au `serial: 1` du module 07 dans un play ciblant les nœuds, ce cycle permet une mise à
+jour glissante. La disponibilité dépend aussi du nombre de replicas, de la capacité restante
+et des contraintes de placement de l'application.
 
 ## 5. Ansible dans Kubernetes
 
@@ -252,6 +266,12 @@ L'inverse est aussi possible :
 ## TP 14 — Cluster k3s et déploiement applicatif
 
 **Durée : 50 min.** Corrigé : [`corrige/tp14-k3s/`](../corrige/tp14-k3s/)
+
+> **Deux phases.** `cluster.yml` configure les VMs par SSH, comme aux premiers TP.
+> `application.yml` et `maintenance.yml` tournent ensuite sur le poste et utilisent le
+> kubeconfig pour appeler l'API Kubernetes. Leurs tâches ne se connectent pas en SSH à
+> chaque Pod. Avec pipx, le corrigé fixe `ansible_python_interpreter` à
+> `ansible_playbook_python` pour retrouver les bibliothèques injectées dans cet environnement.
 
 ### Préparation
 
@@ -312,7 +332,10 @@ curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 |
 6. **`maintenance.yml`** : vider un nœud, vérifier qu'il est non ordonnançable, le remettre en
    service.
 
-7. **Idempotence** : relancer les trois playbooks, aucun `changed` attendu.
+7. **Idempotence** : relancer `cluster.yml` et `application.yml`, aucun `changed` attendu.
+   `maintenance.yml` réalise volontairement un cycle `drain` puis `uncordon` : il modifie
+   l'état du nœud à chaque passage. Vérifiez que le nœud est de nouveau ordonnançable à la fin,
+   plutôt que d'attendre `changed=0` pour cette opération.
 
 ### Points d'attention
 

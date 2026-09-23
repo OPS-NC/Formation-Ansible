@@ -80,6 +80,11 @@ variables :
 Une machine appartient aux deux. Le nom du paquet, le nom du service, l'utilisateur système
 deviennent des variables de groupe, et la tâche redevient unique :
 
+> Répéter `web01` dans plusieurs groupes désigne **le même hôte** : une tâche ciblant `all`
+> ne sera pas exécutée deux fois sur lui. `inventory_hostname` est son identifiant Ansible ;
+> `ansible_host` est son adresse de connexion. Déclarer cet hôte dans `debian` ne détecte pas
+> son OS : c'est une information que vous fournissez, à distinguer des facts collectés ensuite.
+
 ```yaml
 - name: Installer les paquets de base
   ansible.builtin.package:
@@ -148,6 +153,12 @@ Deux conséquences pratiques :
 
 - Une valeur que l'on souhaite pouvoir surcharger va dans `defaults/` d'un rôle.
 - Une valeur qui ne doit **pas** l'être va dans `vars/` du rôle.
+
+> Cette table simplifie les priorités, elle ne définit pas des protections : `vars/` gagne
+> sur l'inventaire mais reste surchargeable, notamment par `-e`. Une variable comme
+> `http_port` est une donnée de votre projet ; elle ne configure rien tant qu'une tâche ou
+> un template ne l'utilise pas. À l'inverse, Ansible interprète directement `ansible_user`
+> pour choisir le compte SSH.
 
 ### 2.3 Deux groupes de même niveau : qui gagne ?
 

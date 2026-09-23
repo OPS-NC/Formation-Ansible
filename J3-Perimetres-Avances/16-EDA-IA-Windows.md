@@ -62,6 +62,11 @@ Drools. C'est une contrainte d'exploitation à anticiper.
 Sources disponibles : webhook, Kafka, Alertmanager, journal de fichiers, file AWS SQS, Azure
 Service Bus, ServiceNow, sondage d'URL.
 
+> Le rulebook reste en écoute ; le playbook appelé effectue une opération puis se termine.
+> Dans cet exemple, `event.payload.count` doit être fourni par la source : la règle ne compte
+> pas elle-même les alertes précédentes. Le choix des hôtes à réparer relève aussi du
+> playbook appelé ; recevoir le nom d'un service ne désigne pas automatiquement la VM en panne.
+
 ### Ce qu'il faut en attendre
 
 | Bon usage | Mauvais usage |

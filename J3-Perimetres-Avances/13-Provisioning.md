@@ -157,6 +157,10 @@ Après création, `ansible.builtin.meta: refresh_inventory` recharge l'inventair
 exécution, ce qui permet d'enchaîner création et configuration sans écrire d'inventaire
 statique.
 
+> `refresh_inventory` relit les sources déjà sélectionnées avec `-i` : il ne recherche
+> pas un nouveau fichier d'inventaire. Les VMs découvertes seront ciblées par un **play
+> suivant** ; elles ne s'ajoutent pas aux hôtes du play de création déjà en cours.
+
 La collection fournit aussi deux plugins de connexion : `proxmox_pct_remote` pour entrer dans un
 conteneur LXC sans SSH, et `proxmox_qemu_api` qui passe par l'agent QEMU.
 
@@ -265,6 +269,12 @@ avec les mêmes rôles que ceux utilisés ensuite pour la configuration.
 Écrire et valider le code de provisionnement, **sans Proxmox ni vCenter** : ni le lab ni le
 formateur n'en disposent. L'objectif est la structure et la validation statique, pas
 l'exécution. Aucune VM ne sera créée pendant ce TP.
+
+> **Deux accès successifs.** Le premier play tourne sur votre poste et utilise le jeton
+> pour demander à l'API de l'hyperviseur de créer les VMs. cloud-init prépare leur accès
+> SSH ; un second play pourra alors les configurer avec le compte et la clé injectés.
+> Le jeton d'API n'est donc pas un identifiant SSH. Les noms de gabarits, de stockages et
+> d'hyperviseurs des exemples sont des valeurs à adapter, absentes du lab Vagrant.
 
 ### Énoncé
 

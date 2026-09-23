@@ -271,6 +271,11 @@ On part d'`ansible-core` **seul** : c'est `collections/requirements.yml` qui dé
 Un projet dont les dépendances ne sont pas déclarées ne peut pas être empaqueté — la construction
 de l'EE est le test le plus honnête de cette déclaration.
 
+> **Ce que contient l'EE.** L'image fournit l'outillage ; le projet, l'inventaire et les
+> identifiants lui sont fournis au lancement. Le conteneur devient le contexte d'exécution
+> d'Ansible, mais les VMs restent les cibles. Un chemin présent sur votre poste n'existe
+> dans le conteneur que s'il y est monté : cela concerne notamment les clés SSH.
+
 ### Exécuter
 
 ```bash
@@ -293,6 +298,16 @@ AWX et AAP (module 12), et elle permet de lancer un playbook comme tâche Kubern
 ### Objectif
 
 Doter le projet d'un filtre local et d'une chaîne d'intégration, puis l'empaqueter.
+
+> **Du poste à la CI.** Un runner (exécuteur) est la machine qui lance les commandes des
+> jobs. Il récupère les fichiers versionnés, sans vos fichiers locaux ignorés par Git.
+> La CI vérifie le projet ; le job `deploy` applique réellement sa configuration aux cibles.
+> Le lab fournit seulement `dev` : `prod` représente ici l'organisation à préparer, pas
+> un second parc déjà disponible. Sans runner relié au lab, la partie distante reste une
+> lecture de configuration ; les contrôles locaux et la construction de l'EE restent réalisables.
+>
+> Le mot de passe Vault mentionné dans le pipeline sera créé au TP 10. Jusqu'à ce TP,
+> distinguez la préparation du job de son exécution avec des fichiers chiffrés.
 
 ### Énoncé
 

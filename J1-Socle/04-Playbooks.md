@@ -41,6 +41,11 @@ Trois règles de forme, toutes vérifiées par `ansible-lint` :
    est sans ambiguïté et résiste à l'ajout d'une collection qui définirait le même nom.
 3. **Le YAML est indenté à deux espaces, sans tabulation.**
 
+> **Lire l'indentation.** Le premier `name` nomme le play, le second nomme une tâche ; le
+> `name` sous `ansible.builtin.package` désigne le paquet à installer. Le sens d'une clé
+> dépend donc de son niveau. `become: true` conserve la connexion SSH avec `vagrant`, puis
+> utilise `sudo` sur la cible pour exécuter les tâches en root.
+
 ### Ordre d'exécution
 
 Les tâches s'exécutent **dans l'ordre d'écriture**, tâche par tâche, sur toutes les machines en
@@ -220,8 +225,9 @@ ansible-playbook playbooks/base.yml --check --diff
 ```
 
 Affiche le différentiel des fichiers modifiés par `copy`, `template`, `lineinfile`. **Le couple
-`--check --diff` est le réflexe à acquérir** : il transforme un playbook en outil d'audit de
-conformité, exécutable sans risque en production.
+`--check --diff` est le réflexe à acquérir** pour auditer les écarts avant application. Il
+faut toutefois connaître les limites des modules utilisés et les éventuelles tâches forcées
+avec `check_mode: false` : celles-ci s'exécutent réellement.
 
 > `--diff` affiche le contenu des fichiers. Sur une tâche manipulant un secret, ajoutez
 > `no_log: true` (module 11).
@@ -287,6 +293,13 @@ troisième distribution se réduit à un nouveau fichier de variables.
 Écrire un playbook de configuration de base appliqué à l'identique sur Debian 13 et Rocky 10,
 et vérifier son idempotence.
 
+> **À reprendre du TP 02.** Conservez l'inventaire et ses variables ; ajoutez `paquet_ntp`
+> dans `group_vars/debian.yml` et `group_vars/rocky.yml` avec les valeurs du §6. Le gabarit
+> demandé se place dans `playbooks/templates/hosts.j2`. Il est rendu sur le poste, puis le
+> fichier obtenu est déposé dans `/etc/hosts` de chaque VM. Le compte `ansible` créé ici
+> servira à la CI et à Semaphore ; les commandes locales continuent d'utiliser `vagrant`
+> tant que vous ne changez pas les variables de connexion.
+
 ### Préparation
 
 ```bash
@@ -296,6 +309,9 @@ ansible-galaxy collection install -r collections/requirements.yml
 # Clé SSH du poste de travail, déployée par le playbook
 ssh-keygen -t ed25519 -C "formation-ansible" -f ~/.ssh/id_ed25519 -N ""
 ```
+
+> Si cette clé existe déjà, réutilisez-la sans l'écraser. Seule sa partie publique (`.pub`)
+> sera déposée sur les VMs ; la clé privée reste sur le poste.
 
 ### Énoncé
 
@@ -340,7 +356,7 @@ ansible-playbook playbooks/base.yml --check --diff
 > du mode simulation, pas un défaut du playbook.
 >
 > La simulation prend tout son sens **après** la première convergence : elle devient un audit de
-> dérive, exécutable sans risque et aussi souvent qu'on le souhaite. C'est l'usage retenu dans
+> dérive, avec les limites du mode simulation décrites au §5. C'est l'usage retenu dans
 > la chaîne d'intégration du module 10.
 
 ### Résultat attendu

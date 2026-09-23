@@ -300,6 +300,12 @@ Un rôle externe presque adapté ne se duplique pas. Par ordre de préférence :
 
 Restructurer le fil rouge en rôles, et installer PostgreSQL sur `db01` avec une collection.
 
+> **Passer au rôle.** `tasks/main.yml` reçoit la liste de tâches, sans les clés `hosts:`,
+> `become:` et `tasks:` du play. Le play de `site.yml` choisit les machines et appelle le
+> rôle. Renommez aussi les variables dans les templates quand vous ajoutez le préfixe
+> `nginx_`. Le rôle `postgres` est votre code d'installation ; `community.postgresql`
+> lui fournit les modules qui manipulent les bases et les comptes SQL.
+
 ### Énoncé
 
 1. **Créer le rôle `base`** à partir du playbook du TP 03 : tâches, gabarit `hosts.j2`,
@@ -339,9 +345,9 @@ Restructurer le fil rouge en rôles, et installer PostgreSQL sur `db01` avec une
 ansible-galaxy install -r requirements.yml
 ansible-lint .
 ansible-playbook site.yml --list-tasks
-ansible-playbook site.yml --check --diff
 ansible-playbook site.yml
 ansible-playbook site.yml          # idempotence
+ansible-playbook site.yml --check --diff   # PostgreSQL doit déjà être installé
 ```
 
 `--list-tasks` doit faire apparaître la validation des arguments :
@@ -354,6 +360,12 @@ ansible-playbook site.yml          # idempotence
 ```
 
 ### Points d'attention
+
+> **Deux comptes distincts.** `become_user: postgres` choisit le compte **Linux** qui exécute
+> le module. L'authentification locale *peer* permet ensuite à ce compte d'administrer
+> PostgreSQL par socket Unix. Le compte SQL `applicatif` est créé pour l'application : il
+> n'est pas un utilisateur SSH. Ouvrir le pare-feu ne suffit pas à autoriser des connexions
+> SQL distantes ; l'écoute et les règles PostgreSQL doivent aussi les permettre.
 
 - **`site.yml` va à la racine du projet**, pas dans `playbooks/` : sinon `roles/` n'est pas
   trouvé.

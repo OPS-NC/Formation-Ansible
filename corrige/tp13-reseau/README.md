@@ -141,5 +141,5 @@ bonne voie, comme le fait `03-hors-ligne.yml`.
 > host-only, détection de l'invité, adressage des interfaces, insertion de clé SSH, compte
 > et type de clé, et provisionnement non privilégié.
 >
-> **Non validé** : NetBox comme source de vérité, et les états `rendered` / `parsed` hors
-> ligne, dont la limite est décrite plus bas.
+> **Non validé** : NetBox comme source de vérité et l'état `parsed` des resource modules.
+> Le rendu `rendered` de `vyos_interfaces` est documenté dans la section hors ligne ci-dessus.

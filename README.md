@@ -20,8 +20,8 @@ infrastructure.
 - Aucune connaissance préalable d'Ansible n'est requise.
 
 **Poste de travail.** Ubuntu 26.04 LTS, 16 Go de RAM, 60 Go de disque libre, virtualisation
-matérielle activée (VT-x / AMD-V). Le poste est le **nœud de contrôle** : Ansible s'exécute
-dessus, jamais dans les VMs.
+matérielle activée (VT-x / AMD-V). Le poste est le **nœud de contrôle** des premiers TP.
+Au TP 11, la VM `tools` devient aussi un nœud de contrôle pour les exécutions depuis Semaphore.
 
 ---
 
@@ -99,7 +99,7 @@ La procédure d'installation complète du poste est décrite dans le
 .
 ├── README.md              Ce fichier — parcours de la formation
 ├── PLAN.md                Plan pédagogique détaillé (découpage horaire, objectifs)
-├── Vagrantfile            Définition des 7 VMs du lab
+├── Vagrantfile            Définition des 8 VMs du lab
 ├── bootstrap.sh           Socle minimal des VMs (Python)
 ├── J1-Socle/              Modules 01 à 06
 ├── J2-Industrialisation/  Modules 07 à 12
