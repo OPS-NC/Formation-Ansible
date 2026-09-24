@@ -3,7 +3,7 @@
 > **Jour 3** · 45 min · Théorie et démonstrations
 > Prérequis : [module 15](15-Kubernetes.md).
 
-## Objectifs
+## 🎯 Objectifs
 
 - Comprendre le modèle événementiel et ses cas d'usage réels.
 - Situer les assistants IA de 2026 et les encadrer.
@@ -11,7 +11,7 @@
 
 ---
 
-## 1. Event-Driven Ansible
+## 1. ⚡ Event-Driven Ansible
 
 ### Du push au déclenchement
 
@@ -82,7 +82,7 @@ Service Bus, ServiceNow, sondage d'URL.
 En édition gratuite, `ansible-rulebook` s'exécute en ligne de commande ou comme service. AAP
 fournit l'**EDA Controller**, qui ajoute interface, droits et supervision des rulebooks.
 
-## 2. Les assistants IA
+## 2. 🤖 Les assistants IA
 
 ### L'offre Red Hat
 
@@ -126,7 +126,7 @@ module en a rencontré plusieurs pendant la préparation de cette formation.
 Deux règles d'hygiène : ne jamais coller de secret dans un prompt, et vérifier chaque module
 proposé avec `ansible-doc` avant de l'accepter.
 
-## 3. Windows
+## 3. 🪟 Windows
 
 Ansible administre Windows depuis longtemps ; ce qui a changé récemment, c'est le transport.
 
@@ -176,7 +176,7 @@ windows:
 
 ---
 
-## Points clés
+## 🔑 Points clés
 
 - **Event-Driven Ansible** ajoute la réaction à événement au modèle *push*. `ansible-rulebook`
   exige un JDK.

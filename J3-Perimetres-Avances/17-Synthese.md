@@ -3,7 +3,7 @@
 > **Jour 3** · 45 min · Synthèse et clôture
 > Prérequis : l'ensemble de la formation.
 
-## Objectifs
+## 🎯 Objectifs
 
 - Relire le parcours accompli et ce qu'il produit.
 - Disposer d'une checklist de mise en production.
@@ -11,7 +11,7 @@
 
 ---
 
-## 1. Ce qui a été construit
+## 1. 🏗️ Ce qui a été construit
 
 Un projet unique, du premier au dernier TP :
 
@@ -49,7 +49,7 @@ environment. La déclaration des dépendances n'est pas de la paperasse.
 des modules utilisés. Une tâche portant `check_mode: false` s'exécute réellement, même dans
 ce mode : la simulation ne dispense pas de lire le playbook.
 
-## 3. Checklist d'un projet en production
+## 3. 📋 Checklist d'un projet en production
 
 ### Structure
 - [ ] `ansible.cfg` versionné, `inventory` et `roles_path` explicites
@@ -86,7 +86,7 @@ ce mode : la simulation ne dispense pas de lire le playbook.
 - [ ] Sauvegarde avant modification sur les équipements réseau
 - [ ] Journal des exécutions conservé
 
-## 4. Par où commencer en rentrant
+## 4. 🏁 Par où commencer en rentrant
 
 Dans cet ordre, chaque étape rendant la suivante possible.
 
@@ -128,7 +128,7 @@ Dans cet ordre, chaque étape rendant la suivante possible.
 | Registre de boxes Vagrant | **Ferme le 31 décembre 2026** |
 | Lightspeed | Renommé « Automation coding assistant », modèle au choix |
 
-## 6. Pour continuer
+## 6. 📚 Pour continuer
 
 **Documentation**
 - Documentation officielle Ansible, qui suit la version installée
@@ -149,7 +149,7 @@ l'essentiel. Elle n'aborde ni CI/CD, ni réseau, ni Kubernetes.
 
 ---
 
-## Quiz final
+## ❓ Quiz final
 
 20 minutes, correction collective.
 

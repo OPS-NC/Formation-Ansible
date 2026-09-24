@@ -3,7 +3,7 @@
 > **Jour 1** · 60 min · Théorie + **TP 02**
 > Prérequis : [module 02](02-Noeud-De-Controle.md), lab démarré.
 
-## Objectifs
+## 🎯 Objectifs
 
 - Structurer un inventaire YAML en groupes fonctionnels et systèmes.
 - Placer les variables au bon endroit et prévoir laquelle l'emporte.
@@ -160,7 +160,7 @@ Deux conséquences pratiques :
 > un template ne l'utilise pas. À l'inverse, Ansible interprète directement `ansible_user`
 > pour choisir le compte SSH.
 
-### 2.3 Deux groupes de même niveau : qui gagne ?
+### 2.3 🥊 Deux groupes de même niveau : qui gagne ?
 
 Question posée à chaque formation. `web01` appartient à `web` et à `debian`, et les deux groupes
 définissent la même variable. Réponse : **l'ordre alphabétique des noms de groupes**, le dernier
@@ -323,7 +323,7 @@ ansible-playbook site.yml --limit '!db01'
 ansible-playbook site.yml --limit @/tmp/echecs.txt   # liste d'hôtes dans un fichier
 ```
 
-> `--list-hosts` affiche les machines qui seraient touchées, sans rien exécuter. À utiliser
+> 💡 `--list-hosts` affiche les machines qui seraient touchées, sans rien exécuter. À utiliser
 > systématiquement avant une opération sur la production.
 
 ## 5. Commandes ad hoc
@@ -436,7 +436,7 @@ parc par commandes ad hoc.
    - tout sauf le groupe `ops`.
    Vérifier chacun avec `--list-hosts`.
 
-### Résultat attendu
+### ✅ Résultat attendu
 
 ```console
 $ ansible all -m ansible.builtin.debug -a "var=banniere"
@@ -453,7 +453,7 @@ tools | SUCCESS =>
 L'ordre des machines varie d'une exécution à l'autre : les quatre hôtes sont traités en
 parallèle (`forks = 10`), et chacun s'affiche dès qu'il répond.
 
-### Pièges courants
+### ⚠️ Pièges courants
 
 | Symptôme | Cause |
 |---|---|
@@ -462,7 +462,7 @@ parallèle (`forks = 10`), et chacun s'affiche dès qu'il répond.
 | Variable inattendue | Deux groupes du même axe définissent la même clé |
 | `skipping: no hosts matched` | Motif erroné — contrôler avec `--list-hosts` |
 
-### Pour aller plus loin
+### 🚀 Pour aller plus loin
 
 - Écrire le même inventaire au format INI et mesurer ce qui devient impossible à exprimer.
 - Afficher, depuis `web01`, l'adresse de `db01` avec
@@ -470,7 +470,7 @@ parallèle (`forks = 10`), et chacun s'affiche dès qu'il répond.
 
 ---
 
-## Points clés
+## 🔑 Points clés
 
 - **Deux axes de groupement** : fonction et système. Les différences deviennent des variables,
   pas des conditions.

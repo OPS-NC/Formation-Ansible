@@ -3,7 +3,7 @@
 > **Jour 2** · 60 min · Théorie + **TP 11**
 > Prérequis : [module 11](11-Secrets.md).
 
-## Objectifs
+## 🎯 Objectifs
 
 - Savoir ce qu'apporte une interface web par rapport à la ligne de commande.
 - Choisir entre les solutions disponibles en 2026, gratuites et payantes.
@@ -30,7 +30,7 @@ l'exploitation : contrôle d'accès, journal, ordonnancement.
 
 ## 2. Le paysage en 2026
 
-### AWX — projet gelé
+### 🧊 AWX — projet gelé
 
 **AWX 24.6.1, juillet 2024.** Aucune publication depuis plus de deux ans. Le dépôt annonce une
 pause pendant une refonte de grande ampleur. Conséquences :
@@ -55,7 +55,7 @@ Points structurants :
 - Essai gratuit de 60 jours.
 - Cycle de support de 18 mois.
 
-### Semaphore UI — le choix de la formation
+### ⭐ Semaphore UI — le choix de la formation
 
 **2.19.12, août 2026, licence MIT.** Interface écrite en Go, installable par paquet, sans
 Kubernetes, opérationnelle en une quinzaine de minutes.
@@ -260,7 +260,7 @@ Depuis `http://192.168.56.31:3000` :
 - Semaphore installe lui-même les collections déclarées dans le dépôt.
 - Le mot de passe administrateur est passé en clair dans le TP : en production il vient du vault.
 
-### Pièges courants
+### ⚠️ Pièges courants
 
 | Symptôme | Cause |
 |---|---|
@@ -272,7 +272,7 @@ Depuis `http://192.168.56.31:3000` :
 | `Permission denied (publickey)` depuis Semaphore | Inventaire renvoyant vers les clés Vagrant du poste |
 | Webhook GitLab rejeté | `auth_method: github` au lieu de `token` |
 
-### Pour aller plus loin
+### 🚀 Pour aller plus loin
 
 - Comparer avec AWX : démonstration formateur sur k3s, et constat du gel du projet.
 - Ajouter une notification Slack ou Telegram sur échec.
@@ -280,7 +280,7 @@ Depuis `http://192.168.56.31:3000` :
 
 ---
 
-## Points clés
+## 🔑 Points clés
 
 - Une interface web n'ajoute **aucune capacité** à Ansible : elle ajoute traçabilité, droits,
   planification et self-service.

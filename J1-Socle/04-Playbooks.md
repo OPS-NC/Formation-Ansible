@@ -3,7 +3,7 @@
 > **Jour 1** · 75 min · Théorie + **TP 03**
 > Prérequis : [module 03](03-Inventaire.md), inventaire structuré en place.
 
-## Objectifs
+## 🎯 Objectifs
 
 - Écrire un playbook lisible et rejouable sur deux familles de distributions.
 - Choisir le bon module et l'encadrer pour qu'il soit idempotent.
@@ -93,7 +93,7 @@ ansible-doc -s ansible.builtin.user       # aide-mémoire des options
 > `ansible.builtin.apt_key` et `ansible.builtin.apt_repository` sont **dépréciés**. Pour ajouter
 > un dépôt APT, utilisez `ansible.builtin.deb822_repository`.
 
-## 3. Idempotence
+## 3. 🔁 Idempotence
 
 ### 3.1 Les états rapportés
 
@@ -150,7 +150,7 @@ play sur cette machine.
 > Par défaut, une tâche échoue si le code retour est différent de zéro. `failed_when` remplace
 > entièrement ce test : si vous l'utilisez, pensez à y inclure le cas d'erreur réel.
 
-### 3.3 Chercher le module avant d'écrire une commande
+### 3.3 🔍 Chercher le module avant d'écrire une commande
 
 Avant d'écrire `shell: systemctl restart nginx`, cherchez le module. Le module apporte
 l'idempotence, la gestion du mode simulation, un rapport d'erreur exploitable et la portabilité
@@ -349,7 +349,7 @@ ansible-playbook playbooks/base.yml
 ansible-playbook playbooks/base.yml --check --diff
 ```
 
-> **Attention — l'ordre n'est pas interchangeable**
+> ⚠️ **Attention — l'ordre n'est pas interchangeable**
 > Sur une machine **vierge**, `--check` ne peut pas valider l'ensemble du playbook. Les paquets
 > ne sont pas installés et le compte de service n'est pas créé : les tâches suivantes portent
 > alors sur un service ou un utilisateur qui n'existe pas, et échouent. C'est une limite connue
@@ -359,7 +359,7 @@ ansible-playbook playbooks/base.yml --check --diff
 > dérive, avec les limites du mode simulation décrites au §5. C'est l'usage retenu dans
 > la chaîne d'intégration du module 10.
 
-### Résultat attendu
+### ✅ Résultat attendu
 
 Au second passage :
 
@@ -382,7 +382,7 @@ générée, la tâche de dépôt est ignorée : `ok=11 skipped=1`.
   Sans cela, une erreur de syntaxe rend `sudo` inutilisable sur la machine.
 - `hostvars[h]['ansible_host']` fonctionne sans facts : c'est une variable d'inventaire.
 
-### Pièges courants
+### ⚠️ Pièges courants
 
 | Symptôme | Cause |
 |---|---|
@@ -393,7 +393,7 @@ générée, la tâche de dépôt est ignorée : `ok=11 skipped=1`.
 | Tâches ignorées en `--check` | Comportement normal de `command` et `shell` |
 | Échec en `--check` sur une machine vierge | Attendu : simuler après la première convergence |
 
-### Pour aller plus loin
+### 🚀 Pour aller plus loin
 
 - Ajouter `--limit rocky` puis `--limit debian` et comparer les paquets installés.
 - Modifier `/etc/hosts` à la main sur `web02`, puis relancer en `--check --diff` : le
@@ -402,7 +402,7 @@ générée, la tâche de dépôt est ignorée : `ok=11 skipped=1`.
 
 ---
 
-## Points clés
+## 🔑 Points clés
 
 - Un playbook est une **liste de plays** exécutée **dans l'ordre**, avec une barrière entre
   chaque tâche.

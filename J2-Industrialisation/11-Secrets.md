@@ -3,7 +3,7 @@
 > **Jour 2** · 45 min · Théorie + **TP 10**
 > Prérequis : [module 10](10-Git-CICD.md).
 
-## Objectifs
+## 🎯 Objectifs
 
 - Chiffrer des variables avec `ansible-vault` et gérer plusieurs environnements.
 - Connaître les limites du vault et les alternatives.
@@ -25,7 +25,7 @@ Trois familles de réponses, par sophistication croissante :
 | SOPS + age | Chiffré dans le dépôt, valeur par valeur | Revue de code, GitOps |
 | Coffre externe | Hors du dépôt, lu à l'exécution | Grande échelle, rotation, audit |
 
-## 2. ansible-vault
+## 2. 🔐 ansible-vault
 
 ### Chiffrer un fichier
 
@@ -200,7 +200,7 @@ disponibilité au moment de l'exécution.
 
 ## 5. Hygiène
 
-### `no_log`
+### 🤫 `no_log`
 
 ```yaml
 - name: Creer le compte applicatif
@@ -218,7 +218,7 @@ journalisation et dans les artefacts de CI.
 > déboguer, désactivez-le temporairement — jamais en production. Astuce :
 > `no_log: "{{ not debug_secrets | default(false) }}"`.
 
-### Les fuites les moins évidentes
+### 💧 Les fuites les moins évidentes
 
 | Source | Parade |
 |---|---|
@@ -295,7 +295,7 @@ Sortir le mot de passe PostgreSQL du code en clair, avec deux environnements dis
 
 8. **Tourner la clé** : `ansible-vault rekey --vault-id dev@... --new-vault-id dev@...`.
 
-### Résultat attendu
+### ✅ Résultat attendu
 
 ```console
 $ head -1 inventories/dev/group_vars/db/vault.yml
@@ -314,7 +314,7 @@ ERROR! Decryption failed (no vault secrets were found that could decrypt).
 - `no_log: true` masque toute la sortie de la tâche, message d'erreur compris.
 - Fournir plusieurs `--vault-id` est sans risque : seul celui qui correspond est utilisé.
 
-### Pièges courants
+### ⚠️ Pièges courants
 
 | Symptôme | Cause |
 |---|---|
@@ -325,7 +325,7 @@ ERROR! Decryption failed (no vault secrets were found that could decrypt).
 | Différentiel illisible en revue | Fichier entièrement chiffré au lieu de la convention `vault_` |
 | `yaml[document-start]` sur un fichier chiffré | Normal : exclure les fichiers vault du lint |
 
-### Pour aller plus loin
+### 🚀 Pour aller plus loin
 
 - Écrire un script de mot de passe vault lisant le trousseau du système, et le référencer dans
   `ansible.cfg`.
@@ -334,7 +334,7 @@ ERROR! Decryption failed (no vault secrets were found that could decrypt).
 
 ---
 
-## Points clés
+## 🔑 Points clés
 
 - Convention **`main.yml` en clair + `vault.yml` chiffré**, variables préfixées `vault_`.
 - L'**identifiant de vault est inscrit dans le fichier** : un environnement, un mot de passe.

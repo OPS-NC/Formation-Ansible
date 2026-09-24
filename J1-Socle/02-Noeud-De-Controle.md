@@ -3,7 +3,7 @@
 > **Jour 1** · 60 min · Théorie + **TP 01**
 > Prérequis : [module 01](01-Introduction.md).
 
-## Objectifs
+## 🎯 Objectifs
 
 - Installer un nœud de contrôle Ansible à jour sur Ubuntu 26.04, sans passer par les dépôts
   de la distribution.
@@ -97,7 +97,7 @@ exécutables : il n'y a donc pas de collision dans `~/.local/bin`.
 - *uv* : `uv tool install --with-executables-from ansible-core ansible` fonctionne, mais
   n'est pas documenté par le projet Ansible. Ne mélangez jamais pipx et uv pour un même outil.
 
-### 1.4 Ce qui a disparu en 2.20 et 2.21
+### 1.4 🗑️ Ce qui a disparu en 2.20 et 2.21
 
 À connaître avant de reprendre du code existant :
 
@@ -164,7 +164,7 @@ https://download.virtualbox.org/virtualbox/debian resolute contrib" \
 sudo apt update && sudo apt install -y virtualbox-7.2
 ```
 
-> **Attention — Secure Boot**
+> 🔒 **Attention — Secure Boot**
 > Si Secure Boot est actif (`mokutil --sb-state`), le module `vboxdrv` non signé est refusé au
 > chargement. Deux voies : désactiver Secure Boot dans le firmware (le plus simple en salle),
 > ou enrôler une clé MOK avec `sudo dkms generate_mok` puis `sudo mokutil --import`, suivi d'un
@@ -192,7 +192,7 @@ https://apt.releases.hashicorp.com resolute main" \
 sudo apt update && sudo apt install -y vagrant
 ```
 
-> **Attention — fin du registre de boxes**
+> ⏳ **Attention — fin du registre de boxes**
 > Vagrant est sous licence BUSL-1.1 depuis la 2.4.3 (usage formation couvert par
 > l'*Additional Use Grant*). Surtout, **le registre HCP Vagrant ferme le 31 décembre 2026** :
 > plus aucune publication depuis le 1er octobre 2026. Les boxes utilisées ici doivent être
@@ -401,7 +401,7 @@ Disposer d'un nœud de contrôle fonctionnel et joindre les quatre VMs du jour 1
    ansible all -m ansible.builtin.setup -a "filter=ansible_distribution*"
    ```
 
-### Résultat attendu
+### ✅ Résultat attendu
 
 ```console
 $ ansible all -m ansible.builtin.ping
@@ -417,7 +417,7 @@ La sortie est en YAML, et non en JSON : c'est l'effet de `callback_result_format
 dans l'`ansible.cfg` du dépôt (§4.2). Sans ce réglage, la même commande répondrait
 `web01 | SUCCESS => {"changed": false, "ping": "pong"}`.
 
-### Pièges courants
+### ⚠️ Pièges courants
 
 | Symptôme | Cause | Correction |
 |---|---|---|
@@ -427,7 +427,7 @@ dans l'`ansible.cfg` du dépôt (§4.2). Sans ce réglage, la même commande ré
 | La configuration semble ignorée | Répertoire *world-writable*, ou mauvais répertoire courant | `ansible-config view` |
 | `vagrant up` échoue sur `vboxdrv` | Secure Boot, ou build DKMS en échec | §2.1 — `dkms status`, `sudo dpkg-reconfigure virtualbox-dkms` |
 
-### Pour aller plus loin
+### 🚀 Pour aller plus loin
 
 - Comparer `ansible-config dump --only-changed` avant et après avoir renommé `ansible.cfg`.
 - Lancer `ansible all -m ansible.builtin.ping -vvv` et identifier, dans la trace, la commande
@@ -435,7 +435,7 @@ dans l'`ansible.cfg` du dépôt (§4.2). Sans ce réglage, la même commande ré
 
 ---
 
-## Points clés
+## 🔑 Points clés
 
 - Les paquets des distributions sont en retard : on installe avec **pipx**, pas avec `apt`.
 - **PEP 668** interdit `pip install --user` ; `--break-system-packages` est à proscrire.

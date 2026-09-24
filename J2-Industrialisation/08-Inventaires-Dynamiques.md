@@ -3,7 +3,7 @@
 > **Jour 2** · 45 min · Théorie + **TP 07**
 > Prérequis : [module 07](07-Execution-Avancee.md).
 
-## Objectifs
+## 🎯 Objectifs
 
 - Remplacer un inventaire statique par une source de vérité.
 - Enrichir un inventaire existant avec le greffon `constructed`.
@@ -113,7 +113,7 @@ $ ansible-inventory -i inventories/dev/ --graph
 Ces groupes alimentent directement `serial` (module 07) : on met à jour `rang_canari` avant
 `rang_standard`.
 
-### Deux pièges vérifiés
+### 🪤 Deux pièges vérifiés
 
 > **Attention — `group_vars/` est invisible pour un greffon d'inventaire**
 > Les greffons s'exécutent **avant** le chargement de `group_vars/` et `host_vars/`. Une variable
@@ -125,7 +125,7 @@ Ces groupes alimentent directement `serial` (module 07) : on met à jour `rang_c
 > `host_vars/web01.yml` ne donne rien ; écrite directement sur la machine dans l'inventaire, elle
 > produit `rang_canari`.
 >
-> **Règle : toute variable servant à construire l'inventaire se déclare dans la source
+> 📌 **Règle : toute variable servant à construire l'inventaire se déclare dans la source
 > d'inventaire.**
 
 > **Attention — les facts en cache sont exposés à plat**
@@ -143,7 +143,7 @@ Ces groupes alimentent directement `serial` (module 07) : on met à jour `rang_c
 > ```
 > Seule la première forme fonctionne.
 
-## 4. Le cache de facts
+## 4. 💾 Le cache de facts
 
 Sans cache, les facts sont recollectés à chaque exécution, et n'existent pas au moment où
 l'inventaire est construit.
@@ -249,7 +249,7 @@ Enrichir l'inventaire du fil rouge avec des groupes calculés, et activer un cac
 - Un fact en cache s'écrit `ansible_distribution`, pas `ansible_facts['distribution']`.
 - `strict: false` évite qu'une variable absente ne fasse échouer tout l'inventaire.
 
-### Pièges courants
+### ⚠️ Pièges courants
 
 | Symptôme | Cause |
 |---|---|
@@ -259,7 +259,7 @@ Enrichir l'inventaire du fil rouge avec des groupes calculés, et activer un cac
 | Groupe vide alors que le fact existe | `ansible_facts['x']` au lieu de `ansible_x` |
 | L'inventaire entier échoue | `strict: true` avec une variable absente |
 
-### Pour aller plus loin
+### 🚀 Pour aller plus loin
 
 - Ajouter un `keyed_groups` sur `ansible_processor_vcpus` et cibler les machines à 1 vCPU.
 - Comparer la durée d'un playbook court avec et sans cache, callback `timer` activé.
@@ -267,7 +267,7 @@ Enrichir l'inventaire du fil rouge avec des groupes calculés, et activer un cac
 
 ---
 
-## Points clés
+## 🔑 Points clés
 
 - `-i` accepte un **répertoire** ; les sources sont fusionnées par ordre alphabétique.
 - `constructed` **enrichit**, il ne déclare pas : il doit être lu en second.

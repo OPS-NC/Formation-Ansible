@@ -47,7 +47,7 @@ ansible-playbook -i localhost, $K/application.yml
 ansible-playbook -i localhost, $K/maintenance.yml
 ```
 
-## Le point critique du TP
+## 🚨 Le point critique du TP
 
 Sous VirtualBox, `eth0` est l'interface NAT et porte **10.0.2.15 sur les trois VMs**. Sans
 configuration explicite, k3s en déduit son adresse : les nœuds s'enregistrent tous avec la même,
@@ -94,7 +94,7 @@ Trois adresses identiques, ou en 10.0.2.15, signalent que `node-ip` n'a pas ét�
 | `kubernetes.core` | 6.5+ (Helm 4 supporté depuis 6.4) |
 | Client Python | `kubernetes >= 24.2.0`, `jsonpatch` |
 
-> **Validé** : cluster monté en 1 min 09 s, trois nœuds `Ready` avec des adresses internes
+> ✅ **Validé** : cluster monté en 1 min 09 s, trois nœuds `Ready` avec des adresses internes
 > **distinctes** — le piège du `node-ip` est bien traité.
 >
 > ```
