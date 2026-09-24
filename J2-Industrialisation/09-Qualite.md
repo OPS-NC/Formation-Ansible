@@ -3,7 +3,7 @@
 > **Jour 2** · 75 min · Théorie + **TP 08**
 > Prérequis : [module 08](08-Inventaires-Dynamiques.md).
 
-## Objectifs
+## 🎯 Objectifs
 
 - Faire passer un rôle au profil `production` d'`ansible-lint`.
 - Écrire un scénario Molecule au format actuel et tester sur deux distributions.
@@ -24,7 +24,7 @@
 
 Chaque niveau attrape ce que le précédent laisse passer. Aucun ne remplace les autres.
 
-## 2. ansible-lint
+## 2. 🧹 ansible-lint
 
 ### Les profils
 
@@ -110,7 +110,7 @@ ansible-lint --fix=fqcn,name    # sélectivement
 `no-free-form`, `partial-become`, `no-log-password`. **Relisez le différentiel** : l'outil
 reformate parfois plus que prévu.
 
-## 3. Molecule
+## 3. 🧪 Molecule
 
 Molecule crée un environnement jetable, y applique le rôle, vérifie le résultat, et détruit.
 
@@ -330,7 +330,7 @@ ansible-galaxy collection install containers.podman
 - Toute collection utilisée par les tests doit être déclarée, y compris `containers.podman`.
 - `container_systemd: always`, et non `true`.
 
-### Pièges courants
+### ⚠️ Pièges courants
 
 | Symptôme | Cause |
 |---|---|
@@ -341,7 +341,7 @@ ansible-galaxy collection install containers.podman
 | Échec à l'étape `idempotence` | Une tâche rapporte `changed` au second passage |
 | `var-naming[no-role-prefix]` dans `verify.yml` | `register` non préfixé par le nom du rôle |
 
-### Pour aller plus loin
+### 🚀 Pour aller plus loin
 
 - Ajouter un scénario `molecule/rocky-seul/` et le lancer avec `-s rocky-seul`.
 - Lancer `ansible-lint --fix` sur une copie et lire attentivement le différentiel produit.
@@ -349,7 +349,7 @@ ansible-galaxy collection install containers.podman
 
 ---
 
-## Points clés
+## 🔑 Points clés
 
 - Les profils `ansible-lint` sont **cumulatifs** ; `production` n'ajoute que sept règles.
 - Corriger > `# noqa` > `warn_list` > `skip_list`.

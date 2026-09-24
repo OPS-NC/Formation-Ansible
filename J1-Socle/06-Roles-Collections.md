@@ -3,7 +3,7 @@
 > **Jour 1** · 75 min · Théorie + **TP 05**
 > Prérequis : [module 05](05-Variables-Jinja-Handlers.md).
 
-## Objectifs
+## 🎯 Objectifs
 
 - Transformer un playbook en rôle réutilisable et paramétrable.
 - Distinguer `defaults/` et `vars/`, et valider les arguments d'un rôle.
@@ -230,7 +230,7 @@ ansible-galaxy role install -r requirements.yml         # rôles seuls
 > Pour les rôles, `version:` n'accepte **pas** de plage : un tag, une branche ou un commit,
 > rien d'autre. Les collections acceptent les plages (`">=5.0.0,<6.0.0"`).
 
-## 5. Galaxy en 2026
+## 5. 🌌 Galaxy en 2026
 
 | | Collections | Rôles autonomes |
 |---|---|---|
@@ -253,7 +253,7 @@ Un **hub privé** (galaxy_ng, inclus dans AAP) permet de miroiter Galaxy, de pub
 collections internes et de signer le contenu. Galaxy a connu des indisponibilités début 2026 :
 en production, prévoyez un miroir ou un cache.
 
-## 6. Évaluer un contenu avant de l'adopter
+## 6. 🔍 Évaluer un contenu avant de l'adopter
 
 Reprendre un rôle Galaxy fait gagner du temps — à condition de le vérifier. La checklist :
 
@@ -376,7 +376,7 @@ ansible-playbook site.yml --check --diff   # PostgreSQL doit déjà être instal
 - `postgresql_user` peut se signaler `changed` à chaque exécution : PostgreSQL stocke une
   empreinte et ne permet pas de comparer le mot de passe fourni.
 
-### Pièges courants
+### ⚠️ Pièges courants
 
 | Symptôme | Cause |
 |---|---|
@@ -386,7 +386,7 @@ ansible-playbook site.yml --check --diff   # PostgreSQL doit déjà être instal
 | `Validation of arguments failed` | C'est le résultat attendu à l'étape 6 |
 | Lien symbolique circulaire sur Rocky | `sites-available` et `conf.d` confondus : conditionner la tâche |
 
-### Pour aller plus loin
+### 🚀 Pour aller plus loin
 
 - `ansible-doc -t role formation.nginx` : la documentation est générée depuis `argument_specs.yml`.
 - Comparer votre rôle `postgres` à `geerlingguy.postgresql` : lire sa CI et constater que
@@ -395,7 +395,7 @@ ansible-playbook site.yml --check --diff   # PostgreSQL doit déjà être instal
 
 ---
 
-## Points clés
+## 🔑 Points clés
 
 - `defaults/` = ce que l'appelant règle ; `vars/` = ce qu'il ne doit pas toucher.
 - **Préfixez les variables** par le nom du rôle.

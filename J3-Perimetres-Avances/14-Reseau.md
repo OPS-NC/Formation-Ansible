@@ -3,7 +3,7 @@
 > **Jour 3** · 90 min · Théorie + **TP 13**
 > Prérequis : [module 13](13-Provisioning.md).
 
-## Objectifs
+## 🎯 Objectifs
 
 - Comprendre ce qui change quand la cible n'a pas de Python.
 - Utiliser `network_cli` et les *resource modules* avec leurs états.
@@ -113,7 +113,7 @@ Deux usages structurants :
 | `community.network` | Retirée, sans remplaçant |
 | `frr.frr` | **Dépréciée, fin de vie décembre 2025**, incompatible `ansible-core` 2.21 |
 
-## 4. Travailler sans équipement
+## 4. 🔌 Travailler sans équipement
 
 Trois approches fonctionnent réellement.
 
@@ -184,7 +184,7 @@ licence :
 
 ## 6. Exploitation
 
-### Sauvegarder avant de modifier
+### 💾 Sauvegarder avant de modifier
 
 ```yaml
 - name: Sauvegarder la configuration courante
@@ -326,7 +326,7 @@ ssh-keyscan 192.168.56.51 >> ~/.ssh/known_hosts
    > `connection:` du play. Pour que le premier essai échoue vraiment, l'hôte utilisé ne doit
    > pas porter `ansible_connection: network_cli` dans l'inventaire.
 
-### Résultat attendu
+### ✅ Résultat attendu
 
 ```console
 TASK [Resultat de l analyse] ***************************************************
@@ -343,7 +343,7 @@ ok: [localhost] =>
   `network_cli`, même si aucun équipement n'est contacté.
 - `cli_parse` avec `text:` analyse un fichier sans connexion à un équipement.
 
-### Pièges courants
+### ⚠️ Pièges courants
 
 | Symptôme | Cause |
 |---|---|
@@ -353,7 +353,7 @@ ok: [localhost] =>
 | Configuration perdue | `overridden` sur un modèle incomplet |
 | Équipement injoignable après exécution | Interface d'administration modifiée sans `commit confirmed` |
 
-### Pour aller plus loin
+### 🚀 Pour aller plus loin
 
 - Déployer NetBox dans une VM et générer l'inventaire avec `nb_inventory`.
 - Écrire un gabarit TextFSM maison pour une commande non couverte par `ntc_templates`.
@@ -362,7 +362,7 @@ ok: [localhost] =>
 
 ---
 
-## Points clés
+## 🔑 Points clés
 
 - Les modules réseau s'exécutent **sur le nœud de contrôle** ; `ansible_network_os` choisit les
   greffons du constructeur.

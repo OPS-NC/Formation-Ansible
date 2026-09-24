@@ -59,12 +59,12 @@ lentement.
 dans `collections/requirements.yml` est absent de l'image : construire l'EE est le test le plus
 honnête de ce fichier.
 
-> **Validé** sur Ubuntu 26.04 : `ansible-builder` 3.1.1 construit l'EE en 2 min 36 s, et
+> ✅ **Validé** sur Ubuntu 26.04 : `ansible-builder` 3.1.1 construit l'EE en 2 min 36 s, et
 > l'image contient bien les 12 collections déclarées dans `collections/requirements.yml`
 > (ansible-core 2.21.3). Partant d'`ansible-core` seul, c'est le test le plus honnête de ce
 > fichier : il est complet.
 >
 > `pre-commit run --all-files` passe les 6 hooks.
 >
-> **Non validé** : Molecule dans un exécuteur de CI (conteneurs imbriqués). Aucun exécuteur
+> 🚧 **Non validé** : Molecule dans un exécuteur de CI (conteneurs imbriqués). Aucun exécuteur
 > GitLab ni GitHub self-hosted n'était disponible.

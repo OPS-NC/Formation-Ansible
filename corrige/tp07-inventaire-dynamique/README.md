@@ -40,7 +40,7 @@ ANSIBLE_CONFIG=$D/ansible.cfg ansible-inventory -i $D/inventories/dev/ --graph
 
 Après `ansible all -m setup`, `os_inconnu` est remplacé par `os_Debian` et `os_Rocky`.
 
-## Les deux pièges démontrés par ce corrigé
+## 🪤 Les deux pièges démontrés par ce corrigé
 
 ### 1. `group_vars/` est invisible pour le greffon
 

@@ -94,7 +94,7 @@ normalise le résultat dans une variable unique.
 > fourni par `yum-utils` : ce n'est pas le même chemin d'appel. Rocky 10 est resté sur **DNF4** ;
 > ni `dnf5` ni `python3-libdnf5` n'y sont distribués.
 
-## Le paquet qui pose une question
+## 🙋 Le paquet qui pose une question
 
 `grub-pc` redemande son disque d'installation à chaque mise à jour. La box `bento/debian-13`
 est livrée **sans réponse enregistrée** (`grub-pc/install_devices` vide,

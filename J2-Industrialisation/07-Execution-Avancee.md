@@ -3,7 +3,7 @@
 > **Jour 2** · 75 min · Théorie + **TP 06**
 > Prérequis : [module 06](../J1-Socle/06-Roles-Collections.md).
 
-## Objectifs
+## 🎯 Objectifs
 
 - Traiter les erreurs sans laisser le parc dans un état intermédiaire.
 - Orchestrer une opération par vagues sur un parc en production.
@@ -12,7 +12,7 @@
 
 ---
 
-## 1. Traitement des erreurs
+## 1. 🛟 Traitement des erreurs
 
 Par défaut, une tâche en échec retire la machine du play. Les autres continuent. Ce
 comportement convient pour une configuration, pas pour une opération qui laisse le système dans
@@ -73,7 +73,7 @@ Points à retenir :
 > `failed_when` **remplace** le test par défaut sur le code retour. Si votre expression ne
 > couvre pas `rc != 0`, une commande qui plante sera considérée comme réussie.
 
-## 2. Orchestrer par vagues
+## 2. 🌊 Orchestrer par vagues
 
 ### `serial`
 
@@ -211,7 +211,7 @@ Gathering Facts -------------------------------------------------------- 2.20s
 `poll: 0` détache la tâche. Avec `poll: N`, Ansible attend en interrogeant toutes les N
 secondes — utile pour dépasser le délai d'expiration SSH sans détacher.
 
-## 6. Redémarrer proprement
+## 6. 🔄 Redémarrer proprement
 
 ```yaml
 - name: Redemarrer la machine
@@ -235,7 +235,7 @@ Le module `reboot` redémarre **et attend** le retour de la machine. Pour un con
     timeout: 300
 ```
 
-## 7. Tags
+## 7. 🏷️ Tags
 
 ```yaml
 - name: Installer les paquets
@@ -345,7 +345,7 @@ cat rapport-patching.json
 - Le dossier partagé `/vagrant` est désactivé dans le lab, ce qui évite qu'une mise à jour du
   noyau sur Rocky ne casse le montage `vboxsf` au redémarrage suivant.
 
-### Pièges courants
+### ⚠️ Pièges courants
 
 | Symptôme | Cause |
 |---|---|
@@ -356,7 +356,7 @@ cat rapport-patching.json
 | `sudo: a password is required` sur le rapport | `become: false` oublié sur la délégation |
 | Rapport écrit autant de fois qu'il y a de machines | `run_once` oublié |
 
-### Pour aller plus loin
+### 🚀 Pour aller plus loin
 
 - Passer en `serial: [1, 2]` et observer le lot canari.
 - Faire échouer volontairement la vérification finale (arrêter nginx sur `web02` juste avant) et
@@ -366,7 +366,7 @@ cat rapport-patching.json
 
 ---
 
-## Points clés
+## 🔑 Points clés
 
 - `block` / `rescue` / `always` : `always` est le seul endroit fiable pour la remise en état.
 - `failed_when` **remplace** le test sur le code retour.

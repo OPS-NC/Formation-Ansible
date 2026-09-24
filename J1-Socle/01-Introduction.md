@@ -3,7 +3,7 @@
 > **Jour 1** · 45 min · Théorie
 > Prérequis : aucun. Module d'ouverture.
 
-## Objectifs
+## 🎯 Objectifs
 
 À la fin de ce module, vous savez :
 
@@ -49,7 +49,7 @@ Conséquence : **Ansible ne corrige pas la dérive tant qu'on ne le relance pas.
 - exécution planifiée (cron, ordonnanceur, WebUI — module 12) ;
 - exécution déclenchée par événement (Event-Driven Ansible — module 16).
 
-### 2.3 Idempotence
+### 2.3 🔁 Idempotence
 
 Une exécution idempotente produit le même état final quel que soit le nombre de fois où elle est lancée. C'est la propriété centrale de l'outil.
 
@@ -62,7 +62,7 @@ Ansible rapporte quatre états par tâche : `ok`, `changed`, `skipped`, `failed`
 
 L'idempotence n'est **pas automatique** : elle est portée par les modules. `ansible.builtin.package` sait vérifier l'état d'un paquet ; avec `ansible.builtin.command`, vous devez encadrer la commande et déclarer quand elle modifie réellement le système.
 
-> `creates` et `removes` peuvent empêcher une commande de se rejouer. `changed_when` règle
+> ⚠️ `creates` et `removes` peuvent empêcher une commande de se rejouer. `changed_when` règle
 > seulement ce qu'Ansible **rapporte** : la commande s'exécute tout de même. Mettre
 > `changed_when: false` sur une commande qui modifie le système masque donc le changement,
 > sans rendre cette commande idempotente.
@@ -192,14 +192,14 @@ La règle usuelle : **Terraform provisionne, Ansible configure.**
 
 Ansible sait créer des VMs (modules 13), et c'est souvent suffisant en environnement on-premise (Proxmox, vSphere) où l'on ne veut pas gérer de *state*. En revanche, dès que l'infrastructure devient un graphe de ressources cloud interdépendantes, l'absence de *state* et de `plan` devient un handicap.
 
-### 6.3 Quand ne pas utiliser Ansible
+### 6.3 🚫 Quand ne pas utiliser Ansible
 
 - **Déploiement applicatif continu sur Kubernetes** : ArgoCD ou Flux sont conçus pour cela (module 15).
 - **Orchestration de conteneurs en production** : c'est le rôle de Kubernetes ou Nomad.
 - **Traitement de données, boucles lourdes, logique algorithmique** : YAML + Jinja2 n'est pas un langage de programmation. Si vous écrivez des boucles imbriquées avec `selectattr` sur trois niveaux, écrivez un module Python.
 - **Cible unique et action ponctuelle** : un `ssh` suffit.
 
-## 7. Le fil rouge de la formation
+## 7. 🧵 Le fil rouge de la formation
 
 Les trois journées construisent un projet unique, versionné dans Git, qui part d'un inventaire et arrive à un déploiement applicatif sur Kubernetes.
 
@@ -213,7 +213,7 @@ Le lab est décrit dans le module 02. Toutes les machines sont créées par un u
 
 ---
 
-## Points clés
+## 🔑 Points clés
 
 - Ansible est **sans agent**, en **push**, et s'exécute **dans l'ordre d'écriture**.
 - L'**idempotence** est portée par les modules, pas par le moteur : `command` et `shell` doivent être encadrés.
@@ -222,7 +222,7 @@ Le lab est décrit dans le module 02. Toutes les machines sont créées par un u
 - Les paquets des distributions sont en retard : on installe Ansible avec **pipx** (module 02).
 - Le **nœud de contrôle est un actif critique** : il détient les accès au parc entier.
 
-## Quiz de positionnement
+## ❓ Quiz de positionnement
 
 À traiter individuellement en 10 minutes, correction collective. L'objectif est de calibrer le rythme, pas de noter.
 

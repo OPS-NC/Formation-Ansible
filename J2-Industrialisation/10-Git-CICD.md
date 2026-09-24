@@ -3,7 +3,7 @@
 > **Jour 2** · 90 min · Théorie + **TP 09**
 > Prérequis : [module 09](09-Qualite.md).
 
-## Objectifs
+## 🎯 Objectifs
 
 - Organiser un dépôt Ansible et sa gestion de versions.
 - Construire une chaîne d'intégration qui refuse le code non conforme.
@@ -69,7 +69,7 @@ facts_cache/
 - **Dépendances épinglées** dans `requirements.yml`. Une plage non bornée rend la CI
   irreproductible.
 
-## 3. Pre-commit
+## 3. 🪝 Pre-commit
 
 Le premier filtre, le moins cher : il s'exécute avant le commit, donc avant la CI.
 
@@ -199,7 +199,7 @@ principales : `args`, `setup_python`, `python_version`, `working_directory`,
 > [`.github/workflows/lint.yml`](../.github/workflows/lint.yml) valide tous les corrigés à chaque
 > poussée.
 
-### Secrets en CI
+### 🔐 Secrets en CI
 
 | Méthode | Usage |
 |---|---|
@@ -219,7 +219,7 @@ after_script:
 > Le nettoyage va dans `after_script`, qui s'exécute quoi qu'il arrive. Dans `script`, un échec
 > laisserait le fichier sur l'exécuteur.
 
-## 5. Execution environments
+## 5. 📦 Execution environments
 
 ### Le problème
 
@@ -346,7 +346,7 @@ Doter le projet d'un filtre local et d'une chaîne d'intégration, puis l'empaqu
 - L'EE part d'`ansible-core` seul : tout ce qui n'est pas déclaré est absent.
 - `--offline` sur `ansible-lint` en CI évite une dépendance au réseau.
 
-### Pièges courants
+### ⚠️ Pièges courants
 
 | Symptôme | Cause |
 |---|---|
@@ -356,7 +356,7 @@ Doter le projet d'un filtre local et d'une chaîne d'intégration, puis l'empaqu
 | Le mot de passe vault reste sur l'exécuteur | Nettoyage placé dans `script` |
 | `deploy` part à chaque fusion | Condition sur l'étiquette absente |
 
-### Pour aller plus loin
+### 🚀 Pour aller plus loin
 
 - Ajouter un job publiant le rôle comme collection interne sur un hub privé.
 - Comparer la durée d'exécution avec et sans EE.
@@ -365,7 +365,7 @@ Doter le projet d'un filtre local et d'une chaîne d'intégration, puis l'empaqu
 
 ---
 
-## Points clés
+## 🔑 Points clés
 
 - **Un environnement, un inventaire** ; un seul `site.yml` pour tous.
 - **Rien de généré n'est versionné**, et surtout aucun secret.

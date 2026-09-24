@@ -8,7 +8,7 @@ Kubernetes.
 
 ---
 
-## Public et prérequis
+## 👥 Public et prérequis
 
 **Public.** Administrateurs systèmes Linux confirmés, ingénieurs DevOps et SRE, architectes
 infrastructure.
@@ -25,7 +25,7 @@ Au TP 11, la VM `tools` devient aussi un nœud de contrôle pour les exécutions
 
 ---
 
-## Le lab
+## 🖥️ Le lab
 
 Toutes les machines virtuelles proviennent d'un unique [`Vagrantfile`](Vagrantfile).
 Aucune installation manuelle, aucune ISO.
@@ -57,7 +57,7 @@ La procédure d'installation complète du poste est décrite dans le
 
 ---
 
-## Parcours
+## 🗺️ Parcours
 
 ### Jour 1 — Socle : de l'inventaire au rôle réutilisable
 
@@ -110,7 +110,7 @@ La procédure d'installation complète du poste est décrite dans le
 Chaque module est autonome : objectifs, contenu théorique, travaux pratiques, points clés.
 Les corrigés exécutables sont dans [`corrige/`](corrige/), organisés par TP.
 
-## Fil rouge
+## 🧵 Fil rouge
 
 Un projet unique est construit du premier au dernier TP :
 

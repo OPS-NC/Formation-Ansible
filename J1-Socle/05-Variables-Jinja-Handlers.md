@@ -3,7 +3,7 @@
 > **Jour 1** · 75 min · Théorie + **TP 04**
 > Prérequis : [module 04](04-Playbooks.md).
 
-## Objectifs
+## 🎯 Objectifs
 
 - Manipuler variables, boucles et conditions sans rendre le playbook illisible.
 - Écrire un gabarit Jinja2 maîtrisant les espaces et les valeurs par défaut.
@@ -117,7 +117,7 @@ elle l'emporte sur les variables d'inventaire.
 Tests utiles : `is defined`, `is not defined`, `is none`, `is truthy`, `in`, `is match(...)`,
 `is version('2.0', '>=')`.
 
-> `when` et `until` attendent déjà une expression Jinja2 : n'ajoutez pas de `{{ }}` autour.
+> 💡 `when` et `until` attendent déjà une expression Jinja2 : n'ajoutez pas de `{{ }}` autour.
 > `when` décide si la tâche s'exécute sur l'hôte courant ; `until` la répète jusqu'à obtenir
 > le résultat attendu. Dans un paramètre comme `name: "{{ paquet_debug }}"`, les accolades
 > demandent au contraire de remplacer le nom de variable par sa valeur.
@@ -277,13 +277,13 @@ le service répond :
   ansible.builtin.meta: flush_handlers
 ```
 
-### Le piège de l'échec
+### 🪤 Le piège de l'échec
 
 Si une tâche ultérieure échoue, **les handlers notifiés ne s'exécutent pas** : la machine reste
 avec la nouvelle configuration sur disque et l'ancienne en mémoire. Deux réponses :
 `--force-handlers` en ligne de commande, ou `force_handlers: true` dans le play.
 
-## 5. Piloter par les données
+## 5. 🎛️ Piloter par les données
 
 C'est la différence entre un playbook qui vieillit bien et un playbook que l'on réécrit.
 
@@ -424,7 +424,7 @@ ansible web -a "nginx -t" --become
   recharger le service.
 - `loop_var: site` évite la collision avec `item` et rend le gabarit lisible.
 
-### Pièges courants
+### ⚠️ Pièges courants
 
 | Symptôme | Cause |
 |---|---|
@@ -434,7 +434,7 @@ ansible web -a "nginx -t" --become
 | Lignes vides dans le fichier généré | Espaces Jinja2 non maîtrisés (`{%-` / `-%}`) |
 | Vérification finale en échec | `flush_handlers` manquant |
 
-### Pour aller plus loin
+### 🚀 Pour aller plus loin
 
 - Ajouter un quatrième site en n'écrivant **que** des données, sans toucher aux tâches.
 - Tester un gabarit sans VM : un play `hosts: localhost, connection: local` qui rend le gabarit
@@ -445,7 +445,7 @@ ansible web -a "nginx -t" --become
 
 ---
 
-## Points clés
+## 🔑 Points clés
 
 - `default(x)` ne couvre pas la chaîne vide : utilisez `default(x, true)`.
 - `loop_control.label` et `loop_var` sont obligatoires dès que l'on boucle sur des dictionnaires.

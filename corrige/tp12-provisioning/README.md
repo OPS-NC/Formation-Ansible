@@ -1,6 +1,6 @@
 # TP 12 — Provisionner sans infrastructure
 
-> **Ce TP est théorique. Aucun Proxmox ni vCenter n'est fourni avec la formation, et il n'y a
+> 📖 **Ce TP est théorique. Aucun Proxmox ni vCenter n'est fourni avec la formation, et il n'y a
 > pas de démonstration sur infrastructure réelle.**
 >
 > Le code ci-dessous n'a **jamais été exécuté contre un hyperviseur**. Ce qui a été vérifié est

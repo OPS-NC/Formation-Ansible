@@ -107,7 +107,7 @@ Autrement dit, la contrainte n'est **pas** qu'il faille un équipement : c'est q
 d'action des collections réseau refuse toute connexion autre que `network_cli`. Il suffit donc
 de **déclarer** `network_cli` — l'équipement, lui, n'a pas besoin d'exister.
 
-> **Attention au piège de précédence.** Une variable d'inventaire `ansible_connection` l'emporte
+> ⚠️ **Attention au piège de précédence.** Une variable d'inventaire `ansible_connection` l'emporte
 > sur le mot-clé `connection:` du play. Un play qui déclare `connection: local` sur un hôte dont
 > l'inventaire porte `ansible_connection: network_cli` utilise en réalité **`network_cli`** : on
 > croit alors tester le mode local alors qu'on parle à l'équipement. C'est exactement ainsi qu'on
@@ -126,7 +126,7 @@ bonne voie, comme le fait `03-hors-ligne.yml`.
 | FRRouting | Collection `frr.frr` en fin de vie, incompatible ansible-core 2.21 |
 | **VyOS** | Box `vyos/current` figée depuis août 2024, mais fonctionnelle |
 
-> **Validé** contre un VyOS réel (`vyos/current` 20240817.00.20, VyOS 1.5-rolling-202408170020).
+> ✅ **Validé** contre un VyOS réel (`vyos/current` 20240817.00.20, VyOS 1.5-rolling-202408170020).
 > La box est bien disponible au téléchargement, et la seconde carte `eth2` existe.
 >
 > ```
@@ -141,5 +141,5 @@ bonne voie, comme le fait `03-hors-ligne.yml`.
 > host-only, détection de l'invité, adressage des interfaces, insertion de clé SSH, compte
 > et type de clé, et provisionnement non privilégié.
 >
-> **Non validé** : NetBox comme source de vérité et l'état `parsed` des resource modules.
+> 🚧 **Non validé** : NetBox comme source de vérité et l'état `parsed` des resource modules.
 > Le rendu `rendered` de `vyos_interfaces` est documenté dans la section hors ligne ci-dessus.

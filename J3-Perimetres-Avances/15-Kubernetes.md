@@ -3,7 +3,7 @@
 > **Jour 3** · 105 min · Théorie + **TP 14**
 > Prérequis : [module 14](14-Reseau.md).
 
-## Objectifs
+## 🎯 Objectifs
 
 - Savoir où Ansible reste pertinent face à Helm, ArgoCD et Flux.
 - Monter un cluster k3s avec Ansible, en évitant le piège réseau du lab.
@@ -58,7 +58,7 @@ amont.
 > ```
 > Le TP écrit son propre rôle, plus court et plus explicite sur le point suivant.
 
-### Le piège du lab, à connaître absolument
+### 🚨 Le piège du lab, à connaître absolument
 
 Sous VirtualBox, chaque VM a deux interfaces : `eth0` en NAT, qui porte **10.0.2.15 sur toutes
 les machines**, et `eth1` sur le réseau host-only. k3s déduit par défaut son adresse de la route
@@ -132,7 +132,7 @@ depuis le poste. On substitue l'adresse en le rapatriant.
   become: false
 ```
 
-> `write-kubeconfig-mode: "0644"` est pratique en lab, à proscrire en production : ce fichier
+> ⚠️ `write-kubeconfig-mode: "0644"` est pratique en lab, à proscrire en production : ce fichier
 > donne les pleins pouvoirs sur le cluster.
 
 ## 3. La collection `kubernetes.core`
@@ -346,7 +346,7 @@ curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 |
 - Le jeton est poussé, pas lu depuis le serveur.
 - Le kubeconfig récupéré doit voir son `127.0.0.1` remplacé.
 
-### Pièges courants
+### ⚠️ Pièges courants
 
 | Symptôme | Cause |
 |---|---|
@@ -357,7 +357,7 @@ curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 |
 | `ModuleNotFoundError: kubernetes` | Client Python absent du contrôleur |
 | L'agent ne rejoint pas | Jeton différent, ou API pas encore prête |
 
-### Pour aller plus loin
+### 🚀 Pour aller plus loin
 
 - Déployer ArgoCD avec le module `helm`, puis lui confier l'application : c'est le passage de
   relais entre Ansible et le GitOps.
@@ -366,7 +366,7 @@ curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 |
 
 ---
 
-## Points clés
+## 🔑 Points clés
 
 - **Ansible amorce et maintient les nœuds ; ArgoCD et Flux gèrent les applications.**
 - Sous VirtualBox, `node-ip` et `flannel-iface` sont **obligatoires**, sinon la panne est

@@ -35,7 +35,7 @@ curl -s http://192.168.56.11/ | head -5
 curl -s -H 'Host: vitrine.lab.local' http://192.168.56.11/ | head -5
 ```
 
-> **L'ordre n'est pas interchangeable.** Sur une machine vierge, `--check` ne peut pas valider
+> ⚠️ **L'ordre n'est pas interchangeable.** Sur une machine vierge, `--check` ne peut pas valider
 > l'ensemble du playbook : les paquets n'y sont pas installes, donc les taches qui portent sur
 > le service ou le compte qu'ils fournissent echouent. La simulation prend tout son sens
 > **apres** la premiere convergence, comme audit de derive. Voir

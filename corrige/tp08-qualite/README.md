@@ -72,7 +72,7 @@ Ces images embarquent systemd, indispensable pour tester un rôle qui démarre u
 Les images officielles `debian:trixie` et `rockylinux/rockylinux:10` ne conviennent pas
 en l'état ; la variante `rockylinux/rockylinux:10-ubi-init` est l'exception côté Rocky.
 
-> **Validé** sur Ubuntu 26.04, podman 5.7.0 rootless (crun, overlay) : `molecule test`
+> ✅ **Validé** sur Ubuntu 26.04, podman 5.7.0 rootless (crun, overlay) : `molecule test`
 > complet en 1 min 40 s.
 >
 > ```

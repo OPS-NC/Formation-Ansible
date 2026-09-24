@@ -3,7 +3,7 @@
 Projet fil rouge de la formation, construit TP par TP. Chaque répertoire correspond
 à un travail pratique et contient les fichiers introduits ou modifiés par ce TP.
 
-> **Continuité du projet.** Dans votre travail, faites évoluer les mêmes fichiers d'un TP au
+> 🧵 **Continuité du projet.** Dans votre travail, faites évoluer les mêmes fichiers d'un TP au
 > suivant. Les corrigés évitent de tout dupliquer : le TP 03 réutilise par exemple l'inventaire
 > du TP 02, et le TP 08 ajoute ses tests au rôle du TP 05. Le README de chaque corrigé précise
 > les éléments à reprendre et les sources d'inventaire à charger ensemble.

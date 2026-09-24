@@ -3,7 +3,7 @@
 > **Jour 3** · 105 min · Théorie + lecture de code + **TP 12**
 > Prérequis : [module 12](../J2-Industrialisation/12-WebUI.md).
 
-> **Ce module est théorique. Aucun Proxmox ni vCenter n'est fourni avec la formation.**
+> 📖 **Ce module est théorique. Aucun Proxmox ni vCenter n'est fourni avec la formation.**
 >
 > Le lab n'en comporte pas, et il n'y a **pas de démonstration sur infrastructure réelle**. Le
 > code des corrigés n'a jamais été exécuté contre un hyperviseur : il est validé par
@@ -16,7 +16,7 @@
 > création → configuration. Ils se transposent tels quels sur une infrastructure existante,
 > mais leur exécution reste à la charge du stagiaire, chez lui.
 
-## Objectifs
+## 🎯 Objectifs
 
 - Distinguer provisionner et configurer, et savoir quand chaque outil est pertinent.
 - Créer des machines sur Proxmox VE avec `community.proxmox`.
@@ -205,7 +205,7 @@ Modules à connaître : `vm`, `vm_info`, `deploy_folder_template`,
 
 Comme sur Proxmox, les **tags vSphere** alimentent les groupes de l'inventaire dynamique.
 
-## 4. Ansible ou Terraform ?
+## 4. 🤔 Ansible ou Terraform ?
 
 **Terraform 1.16 / OpenTofu 1.12.** La formule courante, « Terraform provisionne, Ansible
 configure », mérite d'être nuancée.
@@ -311,7 +311,7 @@ l'exécution. Aucune VM ne sera créée pendant ce TP.
 - Les tags de l'hyperviseur deviennent des groupes : c'est le point d'articulation.
 - `refresh_inventory` évite d'écrire un inventaire statique après création.
 
-### Pièges courants
+### ⚠️ Pièges courants
 
 | Symptôme | Cause |
 |---|---|
@@ -321,7 +321,7 @@ l'exécution. Aucune VM ne sera créée pendant ce TP.
 | Machines créées mais non joignables | cloud-init non configuré, ou clé SSH absente |
 | Modules `community.vmware` en avertissement | Migration vers `vmware.vmware` à faire |
 
-### Pour aller plus loin
+### 🚀 Pour aller plus loin
 
 - Sur un Proxmox auquel vous avez accès **en dehors de la formation** : dérouler le cycle
   complet création, configuration, destruction. C'est le prolongement naturel de ce TP, mais il
@@ -331,7 +331,7 @@ l'exécution. Aucune VM ne sera créée pendant ce TP.
 
 ---
 
-## Points clés
+## 🔑 Points clés
 
 - **Provisionner ≠ configurer.** Ansible sait faire les deux ; Terraform ne fait que le premier.
 - Les modules d'infrastructure s'exécutent sur le **nœud de contrôle**, contre une API.

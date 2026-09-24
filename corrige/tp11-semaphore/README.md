@@ -51,7 +51,7 @@ Interface : `http://192.168.56.31:3000`, compte `admin`, mot de passe défini pa
 > Les variables `SEMAPHORE_ADMIN`, `SEMAPHORE_ADMIN_PASSWORD` et suivantes ne sont lues que par
 > le script d'entrée de l'image Docker. Sur une installation par paquet, elles sont sans effet.
 
-> **Validé** sur la VM `tools` (Debian 13) : installation complète en 18 s, puis second
+> ✅ **Validé** sur la VM `tools` (Debian 13) : installation complète en 18 s, puis second
 > passage `changed=0`.
 >
 > ```console
@@ -69,5 +69,5 @@ Interface : `http://192.168.56.31:3000`, compte `admin`, mot de passe défini pa
 >
 > L'environnement virtuel dédié exécute donc bien le même moteur que le poste de travail.
 >
-> **Non validé** : l'usage de l'interface elle-même (création de projet, clés, tâches,
+> 🚧 **Non validé** : l'usage de l'interface elle-même (création de projet, clés, tâches,
 > webhook), qui relève de la manipulation en salle.
