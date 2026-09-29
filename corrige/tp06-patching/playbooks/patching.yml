@@ -6,7 +6,7 @@
 # rapport consolide en fin d'execution.
 
 - name: Mise a jour orchestree des serveurs
-  hosts: serveurs
+  hosts: all
   become: true
 
   # Une machine a la fois. Le parc reste disponible pendant l'operation.
@@ -152,7 +152,7 @@
             - not (maj_sante.failed | default(true))
 
 - name: Rapport de mise a jour
-  hosts: serveurs
+  hosts: all
   gather_facts: false
 
   tasks:
